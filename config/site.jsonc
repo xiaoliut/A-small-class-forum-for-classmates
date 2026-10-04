@@ -1,0 +1,25 @@
+// 站点配置文件 —— 改完在后台「重新加载配置」或重启生效
+{
+  "siteName": "班级论坛",
+  "siteTagline": "",
+  "siteDescription": "分享学习心得、记录班级活动、发布通知公告的班级论坛。",
+  "welcomeMessage": "欢迎来到班级论坛",
+  "adminContact": "",
+  "footer": {
+    "copyright": "杂鱼科技-杂鱼工作室|https://zayukeji.top",
+    "icp": "",
+    "police": "",
+    "customText": "",
+    "extraLines": [],
+    "links": [
+      { "label": "杂鱼科技", "href": "https://zayukeji.top" }
+    ],
+    "showPoweredBy": false,
+    "poweredByText": ""
+  },
+  "features": {
+    "aiModeration": false,
+    "aiAutoApprove": true,
+    "allowRegister": true
+  }
+}

@@ -1,0 +1,102 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card auth-card--wide">
+  <h1>修改头像</h1>
+  <p class="text-mute text-sm">点击「修改头像」弹出裁剪窗口：选图 → 拖动图片、调整圆圈 → 确定保存。</p>
+
+
+  <div class="avatar-entry">
+    <% if (avatarUrl(currentUser)) { %>
+      <img class="avatar avatar--xl" src="<%= avatarUrl(currentUser) %>" alt="当前头像">
+    <% } else { %>
+      <span class="avatar avatar--xl"><%= (currentUser.nickname || '?').slice(0, 1) %></span>
+    <% } %>
+    <button type="button" class="btn btn--primary" id="avatar-open">修改头像</button>
+  </div>
+</div>
+
+<!-- 头像裁剪弹窗 -->
+<div class="modal" id="avatar-modal" hidden>
+  <div class="modal__overlay" data-avatar-close></div>
+  <div class="modal__dialog">
+    <div class="modal__head">
+      <span>修改头像</span>
+      <button type="button" class="modal__x" data-avatar-close aria-label="关闭">×</button>
+    </div>
+    <div class="modal__body">
+      <div class="avatar-editor__stage" id="avatar-stage">
+        <img id="avatar-img" alt="头像预览">
+        <div class="avatar-editor__mask" id="avatar-mask"></div>
+        <div class="avatar-editor__hint" id="avatar-hint">点击下方「选择图片」开始</div>
+      </div>
+      <div class="avatar-editor__controls">
+        <button type="button" class="btn btn--ghost btn--sm" id="avatar-pick">选择图片</button>
+        <input type="file" id="avatar-file" accept="image/*" hidden>
+        <label class="avatar-editor__slider">
+          裁剪大小 <input type="range" id="avatar-radius" min="50" max="140" value="110">
+        </label>
+      </div>
+    </div>
+    <div class="modal__foot">
+      <button type="button" class="btn btn--ghost" data-avatar-close>取消</button>
+      <button type="button" class="btn btn--primary" id="avatar-save">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="card auth-card auth-card--wide">
+  <h1>修改资料</h1>
+  <p class="text-mute text-sm">真实姓名与学号仅管理员可见，用于核对身份。</p>
+
+  <form action="/me/profile" method="post">
+    <%- csrfInput %>
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="nickname">昵称</label>
+        <input type="text" id="nickname" name="nickname" value="<%= currentUser.nickname %>" required maxlength="16">
+      </div>
+      <div class="form-row">
+        <label class="field-label" for="student_no">学号</label>
+        <input type="text" id="student_no" name="student_no" value="<%= currentUser.student_no || '' %>" maxlength="20">
+      </div>
+    </div>
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="school">学校</label>
+        <input type="text" id="school" name="school" value="<%= currentUser.school %>" required maxlength="40">
+      </div>
+      <div class="form-row">
+        <label class="field-label required" for="class_name">班级</label>
+        <input type="text" id="class_name" name="class_name" value="<%= currentUser.class_name %>" required maxlength="40">
+      </div>
+    </div>
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label" for="email">邮箱</label>
+        <input type="email" id="email" name="email" value="<%= contact.email || '' %>" maxlength="80" placeholder="name@example.com">
+      </div>
+      <div class="form-row">
+        <label class="field-label" for="phone">手机号</label>
+        <input type="tel" id="phone" name="phone" value="<%= contact.phone || '' %>" maxlength="11" pattern="1\d{10}" placeholder="11 位手机号">
+      </div>
+    </div>
+    <div class="field-hint" style="margin:-8px 0 15px">邮箱和手机号<strong>至少填一个</strong>。</div>
+
+    <div class="form-row">
+      <label class="field-label required" for="real_name">真实姓名</label>
+      <input type="text" id="real_name" name="real_name" value="<%= currentUser.real_name %>" required maxlength="20">
+      <div class="field-hint">改名需审核：成员由管理员审核、管理员由超级管理员审核，通过后才会生效。</div>
+      <% if (pendingRename) { %>
+        <div class="alert alert--info" style="margin-top:8px">你有待审核的改名申请：「<%= pendingRename.old_name %>」→「<%= pendingRename.new_name %>」，请等待审核。</div>
+      <% } %>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn--primary" type="submit">保存资料</button>
+      <a class="btn btn--ghost" href="/me">返回个人中心</a>
+    </div>
+  </form>
+</div>
+
+<script src="/static/js/avatar-cropper.js?v=3"></script>
+<%- include('partials/footer') %>

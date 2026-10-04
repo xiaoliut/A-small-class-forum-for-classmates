@@ -1,0 +1,35 @@
+<%- include('partials/header', { title: title, activeNav: 'sections' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>分区导航</h1>
+    <p class="page-head__sub">按主题浏览班级论坛的四个分区。</p>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <% sections.forEach(function (item) { %>
+      <div class="card">
+        <div class="card__head" style="margin-bottom:6px">
+          <h2 class="card__title"><%= item.icon %> <%= item.name %></h2>
+          <span class="badge"><%= counts[item.key] || 0 %> 篇</span>
+        </div>
+        <p class="text-mute text-sm"><%= item.desc %></p>
+        <a class="btn btn--ghost btn--sm" href="/<%= buildQuery({ section: item.key }) %>">进入分区 →</a>
+      </div>
+    <% }); %>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">不确定发哪？</h2>
+      <p class="text-sm text-soft mb-0">
+        学习上的问题选「学习交流」，班级活动和生活记录选「班级生活」，
+        随便聊聊选「综合讨论」。公告分区只有管理员能发布。
+      </p>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

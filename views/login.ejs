@@ -1,0 +1,30 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card">
+  <h1>登录班级论坛</h1>
+  <p class="text-mute text-sm">使用你的论坛账号登录。如果你还没有账号，请先提交入班申请。</p>
+
+
+  <form action="/login" method="post" autocomplete="off">
+    <%- csrfInput %>
+    <input type="hidden" name="next" value="<%= next || '' %>">
+
+    <div class="form-row">
+      <label class="field-label required" for="username">用户名</label>
+      <input type="text" id="username" name="username" value="<%= form.username || '' %>" required maxlength="20" autofocus>
+    </div>
+
+    <div class="form-row">
+      <label class="field-label required" for="password">密码</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <button class="btn btn--primary btn--block" type="submit">登录</button>
+  </form>
+
+  <p class="auth-foot">
+    还没有账号？<a href="/register">提交入班申请 →</a>
+  </p>
+</div>
+
+<%- include('partials/footer') %>

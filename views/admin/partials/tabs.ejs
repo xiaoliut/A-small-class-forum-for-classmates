@@ -1,0 +1,14 @@
+<nav class="admin-tabs">
+  <a class="<%= tab === 'dashboard' ? 'is-active' : '' %>" href="/admin">概览</a>
+  <a class="<%= tab === 'applications' ? 'is-active' : '' %>" href="/admin/applications">入班申请</a>
+  <a class="<%= tab === 'renames' ? 'is-active' : '' %>" href="/admin/renames">改名申请</a>
+  <a class="<%= tab === 'deletions' ? 'is-active' : '' %>" href="/admin/deletions">销号申请</a>
+  <a class="<%= tab === 'posts' ? 'is-active' : '' %>" href="/admin/posts">帖子审核</a>
+  <a class="<%= tab === 'comments' ? 'is-active' : '' %>" href="/admin/comments">评论管理</a>
+  <a class="<%= tab === 'reports' ? 'is-active' : '' %>" href="/admin/reports">举报处理</a>
+  <a class="<%= tab === 'users' ? 'is-active' : '' %>" href="/admin/users">用户管理</a>
+  <% if (currentUser && currentUser.isSuperAdmin) { %>
+    <a class="<%= tab === 'settings' ? 'is-active' : '' %>" href="/admin/settings">站点设置</a>
+  <% } %>
+  <a class="<%= tab === 'logs' ? 'is-active' : '' %>" href="/admin/logs">审核日志</a>
+</nav>

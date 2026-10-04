@@ -1,0 +1,73 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>全部帖子</h1>
+    <p class="page-head__sub">共 <%= total %> 篇公开帖子，按发布时间倒序排列。</p>
+  </div>
+  <% if (currentUser && currentUser.status === 'approved' && !currentUser.isMuted) { %>
+    <a class="btn btn--primary" href="/posts/new">发新帖</a>
+  <% } %>
+</div>
+
+<form class="filters" action="/posts" method="get">
+  <% if (section) { %><input type="hidden" name="section" value="<%= section %>"><% } %>
+  <div class="search-form">
+    <input type="search" name="q" value="<%= keyword %>" placeholder="搜索帖子…" maxlength="40" aria-label="搜索帖子">
+    <button class="btn btn--ghost" type="submit">搜索</button>
+  </div>
+</form>
+
+<div class="filters">
+  <a class="chip <%= !section ? 'is-active' : '' %>" href="/posts<%= buildQuery({ q: keyword }) %>">全部</a>
+  <% sections.forEach(function (item) { %>
+    <a class="chip <%= section === item.key ? 'is-active' : '' %>" href="/posts<%= buildQuery({ section: item.key, q: keyword }) %>">
+      <%= item.icon %> <%= item.name %>
+    </a>
+  <% }); %>
+</div>
+
+<div class="card" style="padding:0">
+  <% if (!posts.length) { %>
+    <div class="empty"><span class="empty__icon"></span>没有找到符合条件的帖子。</div>
+  <% } else { %>
+    <ul class="post-list">
+      <% posts.forEach(function (post) { %>
+        <li class="post-item <%= post.pinned ? 'post-item--pinned' : '' %>">
+          <div class="post-item__body">
+            <div class="post-item__title">
+              <% if (post.pinned) { %><span class="badge badge--accent">置顶</span><% } %>
+              <% if (post.is_notice) { %><span class="badge badge--info">公告</span><% } %>
+              <span class="badge"><%= sectionMeta(post.section).name %></span>
+              <a href="/posts/<%= post.id %>"><%= post.title %></a>
+            </div>
+            <p class="post-item__excerpt"><%= post.content.replace(/\s+/g, ' ').slice(0, 120) %></p>
+            <div class="post-item__meta">
+              <span><%= post.nickname %></span>
+              <span><%= fromNow(post.created_at) %></span>
+              <span><%= post.view_count %></span>
+              <span><%= post.comment_count %></span>
+            </div>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>
+
+<% if (totalPages > 1) { %>
+  <nav class="pagination">
+    <% if (page > 1) { %>
+      <a href="/posts<%= buildQuery({ section: section, q: keyword, page: page - 1 }) %>">上一页</a>
+    <% } else { %><span class="is-disabled">上一页</span><% } %>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <% if (i === page) { %><span class="is-current"><%= i %></span>
+      <% } else { %><a href="/posts<%= buildQuery({ section: section, q: keyword, page: i }) %>"><%= i %></a><% } %>
+    <% } %>
+    <% if (page < totalPages) { %>
+      <a href="/posts<%= buildQuery({ section: section, q: keyword, page: page + 1 }) %>">下一页</a>
+    <% } else { %><span class="is-disabled">下一页</span><% } %>
+  </nav>
+<% } %>
+
+<%- include('partials/footer') %>

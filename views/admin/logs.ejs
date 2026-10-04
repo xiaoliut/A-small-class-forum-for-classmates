@@ -1,0 +1,43 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>审核日志</h1>
+    <p class="page-head__sub">所有管理动作都会留下记录，最近 300 条。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'logs' }) %>
+
+<div class="card">
+  <% if (!logs.length) { %>
+    <div class="empty"><span class="empty__icon"></span>还没有任何审核记录。</div>
+  <% } else { %>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>时间</th>
+            <th>操作人</th>
+            <th>动作</th>
+            <th>对象</th>
+            <th>详情</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(function (log) { %>
+            <tr>
+              <td class="cell-nowrap text-mute text-xs"><%= formatTime(log.created_at) %></td>
+              <td class="cell-nowrap"><%= log.admin_name || '系统' %></td>
+              <td class="cell-nowrap"><span class="badge badge--muted mono"><%= log.action %></span></td>
+              <td class="cell-nowrap text-mute text-xs"><%= log.target_type || '—' %> <%= log.target_id ? '#' + log.target_id : '' %></td>
+              <td><%= log.detail || '—' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

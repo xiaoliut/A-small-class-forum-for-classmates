@@ -1,0 +1,101 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>帖子审核</h1>
+    <p class="page-head__sub">按 AI 风险分从高到低排列，风险高的优先处理。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'posts' }) %>
+
+<div class="filters">
+  <a class="chip <%= tab === 'pending' ? 'is-active' : '' %>" href="/admin/posts?tab=pending">待审核 <%= counts.pending %></a>
+  <a class="chip <%= tab === 'flagged' ? 'is-active' : '' %>" href="/admin/posts?tab=flagged">AI 违规待复核 <%= counts.flagged %></a>
+  <a class="chip <%= tab === 'approved' ? 'is-active' : '' %>" href="/admin/posts?tab=approved">已通过 <%= counts.approved %></a>
+  <a class="chip <%= tab === 'rejected' ? 'is-active' : '' %>" href="/admin/posts?tab=rejected">已驳回 <%= counts.rejected %></a>
+  <a class="chip <%= tab === 'deleted' ? 'is-active' : '' %>" href="/admin/posts?tab=deleted">已删除 <%= counts.deleted %></a>
+  <a class="chip <%= tab === 'all' ? 'is-active' : '' %>" href="/admin/posts?tab=all">全部未公开</a>
+</div>
+
+<% if (!posts.length) { %>
+  <div class="card"><div class="empty"><span class="empty__icon"></span>这个队列已经清空了。</div></div>
+<% } else { %>
+  <% posts.forEach(function (post) { %>
+    <% let labels = []; try { labels = JSON.parse(post.ai_labels || '[]'); } catch (e) { labels = []; } %>
+    <% const s = statusBadge(post.status); %>
+    <% const ai = aiBadge(post.ai_verdict); %>
+    <% const risk = riskBadge(post.ai_risk); %>
+    <div class="queue-item <%= post.ai_risk >= 60 ? 'queue-item--flag' : (post.ai_risk >= 20 ? 'queue-item--warn' : '') %>">
+      <div class="queue-item__head">
+        <span class="badge <%= s.cls %>"><%= s.name %></span>
+        <span class="badge <%= ai.cls %>"><%= ai.name %></span>
+        <span class="badge <%= risk.cls %>"><%= risk.name %></span>
+        <% if (post.pinned) { %><span class="badge badge--accent">置顶</span><% } %>
+        <% if (post.is_notice) { %><span class="badge badge--info">公告</span><% } %>
+        <span class="text-mute text-xs">
+          #<%= post.id %> · <%= post.nickname %>（<%= post.real_name %>，<%= post.class_name %>）
+          · <%= formatTime(post.created_at) %>
+        </span>
+      </div>
+
+      <div class="queue-item__title">
+        <a href="/posts/<%= post.id %>"><%= post.title %></a>
+        <span class="badge"><%= sectionMeta(post.section).name %></span>
+      </div>
+
+      <% if (labels.length) { %>
+        <div class="tag-list" style="margin:6px 0">
+          <% labels.forEach(function (label) { %><span class="badge badge--muted"><%= label %></span><% }); %>
+        </div>
+      <% } %>
+
+      <div class="queue-item__content" data-collapse="200"><%= post.content %></div>
+      <p class="text-xs text-mute"><%= post.ai_summary || '暂无检测说明。' %></p>
+
+      <div class="queue-item__foot">
+        <form action="/admin/posts/<%= post.id %>/approve" method="post">
+          <%- csrfInput %>
+          <button class="btn btn--ok btn--sm" type="submit">通过</button>
+        </form>
+
+        <form action="/admin/posts/<%= post.id %>/reject" method="post" class="inline-controls" data-confirm="确定驳回这篇帖子吗？作者会看到驳回原因。">
+          <%- csrfInput %>
+          <input type="text" name="reason" placeholder="驳回原因" maxlength="200" style="width:160px" aria-label="驳回原因">
+          <button class="btn btn--warn btn--sm" type="submit">驳回</button>
+        </form>
+
+        <form action="/admin/posts/<%= post.id %>/warn" method="post" class="inline-controls">
+          <%- csrfInput %>
+          <input type="text" name="reason" placeholder="警告原因" maxlength="200" style="width:160px" aria-label="警告原因">
+          <button class="btn btn--warn btn--sm" type="submit">警告</button>
+        </form>
+
+        <form action="/admin/posts/<%= post.id %>/delete" method="post" class="inline-controls" data-confirm="确定删除这篇帖子吗？">
+          <%- csrfInput %>
+          <input type="text" name="reason" placeholder="删除原因" maxlength="200" style="width:160px" aria-label="删除原因">
+          <button class="btn btn--danger btn--sm" type="submit">删除</button>
+        </form>
+
+        <form action="/admin/posts/<%= post.id %>/pin" method="post">
+          <%- csrfInput %>
+          <button class="btn btn--ghost btn--sm" type="submit"><%= post.pinned ? '取消置顶' : '置顶' %></button>
+        </form>
+
+        <form action="/admin/posts/<%= post.id %>/notice" method="post">
+          <%- csrfInput %>
+          <button class="btn btn--ghost btn--sm" type="submit"><%= post.is_notice ? '取消公告' : '设为公告' %></button>
+        </form>
+
+        <a class="btn btn--ghost btn--sm" href="/admin/posts/<%= post.id %>/edit">编辑</a>
+
+        <form action="/admin/posts/<%= post.id %>/recheck" method="post">
+          <%- csrfInput %>
+          <button class="btn btn--ghost btn--sm" type="submit">重新检测</button>
+        </form>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,25 @@
+<%- include('partials/header', { title: title, activeNav: 'rules' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>班级论坛使用规范</h1>
+    <p class="page-head__sub">一份不长的约定，读完大约需要 2 分钟。</p>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card article__content">
+      <%- rulesToHtml(rulesText) %>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">一句话版本</h2>
+      <p class="text-sm text-soft mb-0">把这里当成教室的延伸：友善、有用、不打扰别人。</p>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

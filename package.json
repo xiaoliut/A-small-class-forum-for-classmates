@@ -1,0 +1,36 @@
+{
+  "name": "class-forum",
+  "version": "1.0.0",
+  "private": true,
+  "description": "校园班级论坛 - Node.js + Express + SQLite + EJS，含审核制注册、AI 辅助内容审核、管理员后台",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "build": "node build.js",
+    "serve": "node start.js",
+    "stop": "node stop.js",
+    "init-db": "node init-db.js",
+    "reset-db": "node init-db.js --force",
+    "test": "node test/smoke.js"
+  },
+  "keywords": [
+    "forum",
+    "express",
+    "sqlite",
+    "ejs",
+    "campus"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^2.4.0"
+  }
+}

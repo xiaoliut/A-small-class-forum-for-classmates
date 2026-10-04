@@ -1,0 +1,20 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card" style="text-align:center">
+  <div style="font-size:2.6rem"></div>
+  <h1>申请已提交</h1>
+  <p class="text-soft">
+    <% if (username) { %>账号 <strong class="mono"><%= username %></strong> <% } %>
+    的入班申请已经送到管理员那里啦。
+  </p>
+  <div class="alert alert--info" style="text-align:left">
+    审核通常在一天内完成。通过后你就可以用刚才设置的用户名和密码登录，
+    发帖、评论、参与班级讨论。
+  </div>
+  <div class="btn-row" style="justify-content:center">
+    <a class="btn btn--primary" href="/login">去登录试试</a>
+    <a class="btn btn--ghost" href="/rules">先看看论坛规范</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

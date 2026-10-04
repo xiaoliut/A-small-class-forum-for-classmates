@@ -1,0 +1,66 @@
+</main>
+
+<footer class="footer">
+  <div class="container footer__inner">
+    <div class="footer__brand">
+      <span class="footer__title"><%= siteName %></span>
+      <% if (site.siteTagline) { %><span class="footer__tagline"><%= site.siteTagline %></span><% } %>
+    </div>
+
+    <div class="footer__meta">
+      <% if (footer.customText) { %>
+        <p class="footer__custom"><%= footer.customText %></p>
+      <% } %>
+
+      <% footer.extraLines.forEach(function (line) { %>
+        <p class="footer__line"><%= line %></p>
+      <% }); %>
+
+      <div class="footer__copyright">
+        <% footer.copyrights.forEach(function (line) { %>
+          <span><%= line.prefix %><% if (line.link) { %><a href="<%= line.link %>" target="_blank" rel="noopener noreferrer nofollow"><%= line.text %></a><% } else { %><%= line.text %><% } %></span>
+        <% }); %>
+      </div>
+
+      <% if (footer.icp || footer.police) { %>
+        <p class="footer__filings">
+          <% if (footer.icp) { %>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer nofollow"><%= footer.icp %></a>
+          <% } %>
+          <% if (footer.icp && footer.police) { %><span class="footer__sep">·</span><% } %>
+          <% if (footer.police) { %>
+            <a href="https://beian.mps.gov.cn/" target="_blank" rel="noopener noreferrer nofollow"><%= footer.police %></a>
+          <% } %>
+        </p>
+      <% } %>
+
+      <% if (footer.adminContact) { %>
+        <p class="footer__line">管理员：<%= footer.adminContact %></p>
+      <% } %>
+
+      <% if (footer.showPoweredBy && footer.poweredByText) { %>
+        <p class="footer__powered"><%= footer.poweredByText %></p>
+      <% } %>
+    </div>
+
+    <div class="footer__links">
+      <% footer.links.forEach(function (link) { %>
+        <a href="<%= link.href %>"<%= /^https?:/i.test(link.href) ? ' target="_blank" rel="noopener noreferrer"' : '' %>><%= link.icon ? link.icon + ' ' : '' %><%= link.label %></a>
+      <% }); %>
+      <a href="/rules">论坛规范</a>
+      <a href="/healthz">服务状态</a>
+      <% if (currentUser && currentUser.isSuperAdmin) { %>
+        <a href="/admin/settings">站点设置</a>
+      <% } else if (currentUser && currentUser.isAdmin) { %>
+        <a href="/admin">管理后台</a>
+      <% } else { %>
+        <a href="/admin">管理员入口</a>
+      <% } %>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/app.js?v=2"></script>
+<script src="/static/js/image-upload.js?v=2"></script>
+</body>
+</html>

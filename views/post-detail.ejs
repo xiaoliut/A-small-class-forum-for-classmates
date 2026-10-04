@@ -1,0 +1,336 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="layout">
+  <div class="layout__main">
+    <article class="card">
+      <div class="tag-list" style="margin-bottom:10px">
+        <span class="badge"><%= sectionMeta(post.section).icon %> <%= sectionMeta(post.section).name %></span>
+        <% if (post.pinned) { %><span class="badge badge--accent">置顶</span><% } %>
+        <% if (post.is_notice) { %><span class="badge badge--info">公告</span><% } %>
+        <% if (post.status !== 'approved') { %>
+          <% const s = statusBadge(post.status); %>
+          <span class="badge <%= s.cls %>"><%= s.name %></span>
+        <% } %>
+        <% if (post.admin_edited) { %><span class="badge badge--muted">管理员已编辑</span><% } %>
+      </div>
+
+      <h1 class="article__title"><%= post.title %></h1>
+
+      <div class="article__meta">
+        <span class="article__author">
+          <%- avatarHtml(post) %>
+          <%= post.nickname %>
+          <% if (post.author_role === 'admin') { %><span class="badge badge--ok">管理员</span><% } %>
+        </span>
+        <span><%= post.school %> · <%= post.author_class || post.class_name %></span>
+        <span><%= formatTime(post.created_at) %>（<%= fromNow(post.created_at) %>）</span>
+        <span><%= post.view_count %> 次浏览</span>
+      </div>
+
+      <% if (post.warning_reason) { %>
+        <div class="warn-banner">
+          <strong>管理员提示：</strong><%= post.warning_reason %>
+          <% if (post.warning_at) { %><span class="text-xs">（<%= formatTime(post.warning_at) %>）</span><% } %>
+        </div>
+      <% } %>
+
+      <% if (post.status === 'rejected') { %>
+        <div class="alert alert--danger">
+          <strong>这篇帖子未通过审核：</strong><%= post.reject_reason || '内容不符合班级论坛规范' %>
+          <% if (isAuthor) { %><br>你可以修改后重新提交，或<a href="/rules">查看论坛规范</a>。
+          <% } %>
+        </div>
+      <% } else if (post.status === 'pending' || post.status === 'flagged') { %>
+        <div class="alert alert--warn">
+          <strong>这篇帖子正在等待管理员复核。</strong>目前只有你和管理员能看到，
+          <a href="/posts/<%= post.id %>/review">查看 AI 审核详情</a>。
+        </div>
+      <% } else if (post.status === 'deleted') { %>
+        <% if (post.reject_reason === '作者自行删除') { %>
+          <div class="alert alert--info">
+            <strong>作者已删除该帖。</strong>
+          </div>
+        <% } else { %>
+          <div class="alert alert--danger">
+            <strong>该帖已被管理员删除。</strong>
+            <% if (post.reject_reason && post.reject_reason !== '管理员删除') { %>原因：<%= post.reject_reason %><% } %>
+          </div>
+        <% } %>
+      <% } %>
+
+      <div class="article__content"><%= post.content %></div>
+
+      <% const postImages = imageList(post.images); if (postImages.length) { %>
+        <div class="post-images">
+          <% postImages.forEach(function (src) { %>
+            <img src="<%= src %>" alt="帖子图片" data-lightbox loading="lazy">
+          <% }); %>
+        </div>
+      <% } %>
+
+      <% if (post.admin_edited && post.edited_at) { %>
+        <p class="text-mute text-xs">该内容于 <%= formatTime(post.edited_at) %> 被管理员修改。</p>
+      <% } %>
+
+      <!-- AI 审核摘要：所有人可见的透明信息 -->
+      <div class="ai-panel">
+        <div class="ai-panel__head">
+          AI 辅助审核
+          <% const ai = aiBadge(post.ai_verdict); %>
+          <span class="badge <%= ai.cls %>"><%= ai.name %></span>
+          <% const risk = riskBadge(post.ai_risk); %>
+          <span class="badge <%= risk.cls %>"><%= risk.name %></span>
+        </div>
+        <div><%= post.ai_summary || '暂无检测记录。' %></div>
+        <% if (labels.length) { %>
+          <div class="tag-list" style="margin-top:6px">
+            <% labels.forEach(function (label) { %><span class="badge"><%= label %></span><% }); %>
+          </div>
+        <% } %>
+        <div class="text-xs text-mute" style="margin-top:6px">
+          检测来源：<%= post.ai_source === 'rules' ? '本地规则引擎' : (post.ai_source || '—') %>。
+          AI 结果仅作辅助，最终以管理员判断为准。
+        </div>
+      </div>
+
+      <div class="article__actions">
+        <% if (canModerate) { %>
+          <span class="badge badge--ok">管理员操作</span>
+
+          <form action="/admin/posts/<%= post.id %>/pin" method="post" class="inline-form">
+            <%- csrfInput %>
+            <button class="btn btn--ghost btn--sm" type="submit"><%= post.pinned ? '取消置顶' : '置顶' %></button>
+          </form>
+
+          <form action="/admin/posts/<%= post.id %>/notice" method="post" class="inline-form">
+            <%- csrfInput %>
+            <button class="btn btn--ghost btn--sm" type="submit"><%= post.is_notice ? '取消公告' : '设为公告' %></button>
+          </form>
+
+          <a class="btn btn--ghost btn--sm" href="/admin/posts/<%= post.id %>/edit">编辑内容</a>
+
+          <form action="/admin/posts/<%= post.id %>/recheck" method="post" class="inline-form">
+            <%- csrfInput %>
+            <button class="btn btn--ghost btn--sm" type="submit">重新检测</button>
+          </form>
+
+          <% if (post.status !== 'approved') { %>
+            <form action="/admin/posts/<%= post.id %>/approve" method="post" class="inline-form">
+              <%- csrfInput %>
+              <button class="btn btn--ok btn--sm" type="submit">通过审核</button>
+            </form>
+          <% } %>
+
+          <form action="/admin/posts/<%= post.id %>/warn" method="post" class="inline-form">
+            <%- csrfInput %>
+            <input type="text" name="reason" placeholder="警告原因" maxlength="200" required style="width:150px" aria-label="警告原因">
+            <button class="btn btn--warn btn--sm" type="submit">警告作者</button>
+          </form>
+
+          <% if (post.warning_reason) { %>
+            <form action="/admin/posts/<%= post.id %>/unwarn" method="post" class="inline-form">
+              <%- csrfInput %>
+              <button class="btn btn--ghost btn--sm" type="submit">撤销警告</button>
+            </form>
+          <% } %>
+
+          <form action="/admin/posts/<%= post.id %>/reject" method="post" class="inline-form" data-confirm="确定驳回这篇帖子吗？">
+            <%- csrfInput %>
+            <input type="text" name="reason" placeholder="驳回原因" maxlength="200" style="width:150px" aria-label="驳回原因">
+            <button class="btn btn--warn btn--sm" type="submit">驳回</button>
+          </form>
+
+          <form action="/admin/posts/<%= post.id %>/delete" method="post" class="inline-form" data-confirm="确定删除这篇帖子吗？此操作会记录在审核日志中。">
+            <%- csrfInput %>
+            <input type="text" name="reason" placeholder="删除原因" maxlength="200" style="width:150px" aria-label="删除原因">
+            <button class="btn btn--danger btn--sm" type="submit">删除帖子</button>
+          </form>
+        <% } %>
+
+        <% if (isAuthor && !canModerate) { %>
+          <a class="btn btn--ghost btn--sm" href="/posts/<%= post.id %>/edit">编辑</a>
+          <form action="/posts/<%= post.id %>/delete" method="post" class="inline-form" data-confirm="确定删除自己的这篇帖子吗？">
+            <%- csrfInput %>
+            <button class="btn btn--danger btn--sm" type="submit">删除我的帖子</button>
+          </form>
+        <% } %>
+
+        <% if (currentUser && !isAuthor) { %>
+          <form action="/report" method="post" class="inline-controls" style="margin-left:auto">
+            <%- csrfInput %>
+            <input type="hidden" name="target_type" value="post">
+            <input type="hidden" name="target_id" value="<%= post.id %>">
+            <input type="hidden" name="back" value="/posts/<%= post.id %>">
+            <select name="reason">
+              <option value="广告/推广">广告/推广</option>
+              <option value="辱骂/攻击">辱骂/攻击</option>
+              <option value="低俗/违法">低俗/违法</option>
+              <option value="隐私泄露">隐私泄露</option>
+              <option value="其他">其他</option>
+            </select>
+            <input type="text" name="detail" placeholder="补充说明（选填）" maxlength="200" aria-label="补充说明（选填）">
+            <button class="btn btn--ghost btn--sm" type="submit">举报</button>
+          </form>
+        <% } %>
+      </div>
+    </article>
+
+    <!-- 评论 -->
+    <section class="card" id="comments">
+      <div class="card__head">
+        <h2 class="card__title">评论（<%= comments.filter(function (c) { return c.status === 'visible'; }).length %>）</h2>
+        <span class="card__hint">按时间正序</span>
+      </div>
+
+      <% if (!comments.length) { %>
+        <div class="empty" style="padding:26px 10px">
+          <span class="empty__icon"></span>还没有人评论，来说第一句吧。
+        </div>
+      <% } else { %>
+        <ul class="comment-list">
+          <% comments.forEach(function (comment) { %>
+            <li class="comment <%= comment.status !== 'visible' ? 'comment--hidden' : '' %>">
+              <%- avatarHtml(comment, comment.author_role === 'admin' ? '' : 'avatar--gray') %>
+              <div class="comment__body">
+                <div class="comment__head">
+                  <span class="comment__name">
+                    <%= comment.nickname %>
+                    <% if (comment.author_role === 'admin') { %><span class="badge badge--ok">管理员</span><% } %>
+                  </span>
+                  <span class="comment__time"><%= formatTime(comment.created_at) %> · <%= fromNow(comment.created_at) %></span>
+                  <% if (comment.status === 'hidden') { %>
+                    <span class="badge badge--danger">AI 判定违规，待复核</span>
+                  <% } else if (comment.status === 'deleted') { %>
+                    <span class="badge badge--muted">已删除</span>
+                  <% } %>
+                </div>
+                <p class="comment__text"><%= comment.content %></p>
+                <% const commentImages = imageList(comment.images); if (commentImages.length) { %>
+                  <div class="post-images post-images--sm">
+                    <% commentImages.forEach(function (src) { %>
+                      <img src="<%= src %>" alt="评论图片" data-lightbox loading="lazy">
+                    <% }); %>
+                  </div>
+                <% } %>
+                <% if (comment.status === 'hidden' && comment.ai_summary) { %>
+                  <p class="text-xs text-danger"><%= comment.ai_summary %></p>
+                <% } %>
+
+                <div class="comment__tools">
+                  <% if (canModerate || (currentUser && currentUser.id === comment.user_id)) { %>
+                    <form action="/comments/<%= comment.id %>/delete" method="post" class="inline-form" data-confirm="确定删除这条评论吗？">
+                      <%- csrfInput %>
+                      <button class="btn btn--ghost btn--sm" type="submit">删除</button>
+                    </form>
+                  <% } %>
+                  <% if (canModerate && comment.status === 'hidden') { %>
+                    <form action="/admin/comments/<%= comment.id %>/approve" method="post" class="inline-form">
+                      <%- csrfInput %>
+                      <button class="btn btn--ok btn--sm" type="submit">放行展示</button>
+                    </form>
+                  <% } %>
+                  <% if (currentUser && currentUser.id !== comment.user_id && comment.status === 'visible') { %>
+                    <form action="/report" method="post" class="inline-form">
+                      <%- csrfInput %>
+                      <input type="hidden" name="target_type" value="comment">
+                      <input type="hidden" name="target_id" value="<%= comment.id %>">
+                      <input type="hidden" name="reason" value="不当评论">
+                      <input type="hidden" name="back" value="/posts/<%= post.id %>#comments">
+                      <button class="btn btn--ghost btn--sm" type="submit">举报</button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)">
+        <% if (!currentUser) { %>
+          <p class="text-mute text-sm mb-0"><a href="/login?next=/posts/<%= post.id %>">登录</a>后即可参与评论。</p>
+        <% } else if (currentUser.status !== 'approved') { %>
+          <p class="text-mute text-sm mb-0">你的申请通过审核后即可评论。</p>
+        <% } else if (currentUser.isMuted) { %>
+          <p class="text-mute text-sm mb-0">你正在禁言中，暂时无法评论。</p>
+        <% } else { %>
+          <form action="/posts/<%= post.id %>/comments" method="post">
+            <%- csrfInput %>
+            <div class="form-row">
+              <label class="field-label required" for="comment-content">发表评论</label>
+              <textarea id="comment-content" name="content" required minlength="2" maxlength="1000"
+                        style="min-height:92px" data-counter="comment-count" data-submit-on-enter
+                        placeholder="友善交流，Ctrl/⌘ + Enter 快速发送"></textarea>
+              <div class="field-hint"><span id="comment-count">0 字</span> · 违规内容会被 AI 先隐藏再由管理员复核。</div>
+
+              <div class="image-uploader" data-image-uploader data-target="comment-content">
+                <div class="image-uploader__grid" data-preview></div>
+                <div class="image-uploader__bar">
+                  <button type="button" class="btn btn--ghost btn--sm" data-pick>添加图片</button>
+                  <input type="file" data-file accept=".jpg,.jpeg,.png,.gif,.webp,image/*" multiple hidden>
+                  <button type="button" class="btn btn--ghost btn--sm" data-emoji>表情</button>
+                </div>
+                <div class="emoji-panel" data-emoji-panel hidden></div>
+                <input type="hidden" name="images" data-images>
+              </div>
+            </div>
+            <button class="btn btn--primary" type="submit">发表评论</button>
+          </form>
+        <% } %>
+      </div>
+    </section>
+
+    <div class="nav-prev-next card card--flat">
+      <span>
+        <% if (prev) { %>← 上一篇：<a href="/posts/<%= prev.id %>"><%= prev.title %></a>
+        <% } else { %><span class="text-mute">已经是最早的帖子</span><% } %>
+      </span>
+      <span style="text-align:right">
+        <% if (nextPost) { %>下一篇：<a href="/posts/<%= nextPost.id %>"><%= nextPost.title %></a> →
+        <% } else { %><span class="text-mute">已经是最新的帖子</span><% } %>
+      </span>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">作者信息</h2>
+      <div style="display:flex;gap:10px;align-items:center">
+        <%- avatarHtml(post, 'avatar--lg') %>
+        <div>
+          <div style="font-weight:700"><%= post.nickname %></div>
+          <div class="text-mute text-xs"><%= post.school %> · <%= post.author_class || post.class_name %></div>
+        </div>
+      </div>
+      <% if (canModerate) { %>
+        <p class="text-xs text-mute" style="margin-top:10px">
+          真实姓名：<%= post.real_name %><br>
+          账号状态：<%= userStatusBadge(post.author_status).name %>
+        </p>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">同分区帖子</h2>
+      <% if (!related.length) { %>
+        <p class="text-mute text-sm mb-0">暂时没有其他帖子。</p>
+      <% } else { %>
+        <ul class="notice-list">
+          <% related.forEach(function (item) { %>
+            <li><a href="/posts/<%= item.id %>"><%= item.title %></a> <span class="text-mute text-xs"><%= item.comment_count %></span></li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">遇到问题？</h2>
+      <p class="text-sm text-soft mb-0">
+        如果这篇帖子让你感到不适，请使用「举报」按钮，或线下告诉超级管理员。
+        管理员可以在后台看到所有举报记录。
+      </p>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

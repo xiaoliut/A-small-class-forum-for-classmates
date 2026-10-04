@@ -1,0 +1,84 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>个人中心</h1>
+    <p class="page-head__sub">你的账号信息与发帖记录。</p>
+  </div>
+  <% if (currentUser.status === 'approved' && !currentUser.isMuted) { %>
+    <a class="btn btn--primary" href="/posts/new">发新帖</a>
+  <% } %>
+</div>
+
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card">
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <%- avatarHtml(currentUser, 'avatar--lg') %>
+        <div style="min-width:200px;flex:1">
+          <h2 class="mb-0">
+            <%= currentUser.nickname %>
+            <% if (currentUser.role === 'superadmin') { %><span class="badge badge--accent">超级管理员</span><% } %>
+            <% if (currentUser.role === 'admin') { %><span class="badge badge--ok">管理员</span><% } %>
+            <% const us = userStatusBadge(currentUser.status); %>
+            <span class="badge <%= us.cls %>"><%= us.name %></span>
+          </h2>
+          <div class="text-mute text-sm">
+            <%= currentUser.school %> · <%= currentUser.class_name %> · 用户名 <span class="mono"><%= currentUser.username %></span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn--ghost btn--sm" href="/me/profile">修改资料</a>
+          <a class="btn btn--ghost btn--sm" href="/me/password">修改密码</a>
+          <a class="btn btn--ghost btn--sm btn--danger-text" href="/me/delete-account">注销账号</a>
+        </div>
+      </div>
+
+      <% if (currentUser.isMuted) { %>
+        <div class="alert alert--warn" style="margin-top:14px;margin-bottom:0">
+          你当前处于禁言状态，禁言至 <%= formatTime(currentUser.mute_until) %>，期间不能发帖与评论。
+        </div>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:12px">我的数据</h2>
+      <div class="stat-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+        <div class="stat"><div class="stat__value"><%= stats.posts %></div><div class="stat__label">帖子总数</div></div>
+        <div class="stat"><div class="stat__value"><%= stats.approved %></div><div class="stat__label">已公开</div></div>
+        <div class="stat"><div class="stat__value"><%= stats.pending %></div><div class="stat__label">审核中</div></div>
+        <div class="stat"><div class="stat__value"><%= stats.comments %></div><div class="stat__label">评论数</div></div>
+      </div>
+      <div class="btn-row" style="margin-top:14px">
+        <a class="btn btn--ghost btn--sm" href="/me/posts">我的帖子</a>
+        <a class="btn btn--ghost btn--sm" href="/me/comments">我的评论</a>
+        <% if (currentUser.isAdmin) { %>
+          <a class="btn btn--primary btn--sm" href="/admin">进入管理后台</a>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="card card--flat">
+      <p class="text-mute text-sm mb-0">
+        注册时间：<%= formatTime(currentUser.created_at) %>
+        <% if (currentUser.last_login_at) { %> · 上次登录：<%= formatTime(currentUser.last_login_at) %><% } %>
+        <% if (currentUser.student_no) { %> · 学号：<%= currentUser.student_no %><% } %>
+      </p>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">账号安全</h2>
+      <p class="text-sm text-soft">密码采用哈希存储，管理员也无法看到你的原始密码。建议定期更换。</p>
+      <a class="btn btn--ghost btn--sm btn--block" href="/me/password">修改密码</a>
+    </div>
+    <div class="card">
+      <h2 class="card__title">关于举报</h2>
+      <p class="text-sm text-soft mb-0">你一共提交过 <strong><%= reportCount %></strong> 条举报。感谢你帮助维护班级论坛的氛围。</p>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,85 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card auth-card--wide">
+  <h1>申请加入班级论坛</h1>
+  <p class="text-mute text-sm">
+    为保证论坛只对本班同学开放，注册采用「申请 + 管理员审核」的方式。
+    请如实填写学校和班级信息，管理员核对后会为你开通账号。
+  </p>
+
+  <form action="/register" method="post" autocomplete="off">
+    <%- csrfInput %>
+
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="username">用户名</label>
+        <input type="text" id="username" name="username" value="<%= form.username || '' %>" required maxlength="20" pattern="[a-zA-Z0-9_]{3,20}">
+        <div class="field-hint">3-20 位字母、数字或下划线，登录时使用。</div>
+      </div>
+      <div class="form-row">
+        <label class="field-label required" for="nickname">论坛昵称</label>
+        <input type="text" id="nickname" name="nickname" value="<%= form.nickname || '' %>" required maxlength="16">
+        <div class="field-hint">发帖评论时显示的名字，建议用真名或常用称呼。</div>
+      </div>
+    </div>
+
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="password">密码</label>
+        <input type="password" id="password" name="password" required minlength="6">
+        <div class="field-hint">至少 6 位，建议字母 + 数字。</div>
+      </div>
+      <div class="form-row">
+        <label class="field-label required" for="password2">确认密码</label>
+        <input type="password" id="password2" name="password2" required minlength="6">
+      </div>
+    </div>
+
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="school">学校</label>
+        <input type="text" id="school" name="school" value="<%= form.school || 'XX中学' %>" required maxlength="40" placeholder="例如：XX中学">
+      </div>
+      <div class="form-row">
+        <label class="field-label required" for="class_name">班级</label>
+        <input type="text" id="class_name" name="class_name" value="<%= form.class_name || 'XX班' %>" required maxlength="40" placeholder="例如：高一(3)班">
+      </div>
+    </div>
+
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label required" for="real_name">真实姓名</label>
+        <input type="text" id="real_name" name="real_name" value="<%= form.real_name || '' %>" required maxlength="20">
+        <div class="field-hint">仅管理员可见，用于核对身份。</div>
+      </div>
+      <div class="form-row">
+        <label class="field-label" for="student_no">学号（选填）</label>
+        <input type="text" id="student_no" name="student_no" value="<%= form.student_no || '' %>" maxlength="20">
+      </div>
+    </div>
+
+    <div class="form-row--half">
+      <div class="form-row">
+        <label class="field-label" for="email">邮箱</label>
+        <input type="email" id="email" name="email" value="<%= form.email || '' %>" maxlength="80" placeholder="name@example.com">
+      </div>
+      <div class="form-row">
+        <label class="field-label" for="phone">手机号</label>
+        <input type="tel" id="phone" name="phone" value="<%= form.phone || '' %>" maxlength="11" pattern="1\d{10}" placeholder="11 位手机号">
+      </div>
+    </div>
+    <div class="field-hint" style="margin:-8px 0 15px">邮箱和手机号<strong>至少填一个</strong>，也可以两个都填。</div>
+
+    <div class="form-row">
+      <label class="field-label" for="apply_reason">申请说明（选填）</label>
+      <textarea id="apply_reason" name="apply_reason" maxlength="200" data-counter="reason-count" placeholder="例如：我是这学期转来的新同学 / 我是本班学习委员，希望用论坛发通知。"><%= form.apply_reason || '' %></textarea>
+      <div class="field-hint"><span id="reason-count">0 字</span> · 写清楚身份能让管理员更快通过。</div>
+    </div>
+
+    <button class="btn btn--primary btn--block" type="submit">提交申请</button>
+  </form>
+
+  <p class="auth-foot">已经有账号？<a href="/login">直接登录 →</a></p>
+</div>
+
+<%- include('partials/footer') %>

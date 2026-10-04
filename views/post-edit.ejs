@@ -1,0 +1,68 @@
+<%- include('partials/header', { title: title, activeNav: adminMode ? 'admin' : '' }) %>
+
+<div class="page-head">
+  <div>
+    <h1><%= adminMode ? '编辑帖子（管理员）' : '编辑我的帖子' %></h1>
+    <p class="page-head__sub">
+      <% if (adminMode) { %>
+        管理员编辑会直接生效，并记为「已通过」，同时在审核日志中留下记录。
+      <% } else { %>
+        保存后系统会重新检测内容，可能需要管理员再次确认才会公开展示。
+      <% } %>
+    </p>
+  </div>
+  <a class="btn btn--ghost" href="/posts/<%= post.id %>">返回帖子</a>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card">
+      <form action="/posts/<%= post.id %>/edit" method="post">
+        <%- csrfInput %>
+
+        <div class="form-row">
+          <label class="field-label required" for="title">标题</label>
+          <input type="text" id="title" name="title" value="<%= post.title %>" required minlength="4" maxlength="80">
+        </div>
+
+        <div class="form-row">
+          <label class="field-label required" for="section">分区</label>
+          <select id="section" name="section">
+            <% sections.forEach(function (item) { %>
+              <% if (item.adminOnly && !adminMode) return; %>
+              <option value="<%= item.key %>" <%= post.section === item.key ? 'selected' : '' %>><%= item.icon %> <%= item.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label required" for="content">正文</label>
+          <textarea id="content" name="content" class="textarea--tall" required maxlength="5000"
+                    data-counter="content-count"><%= post.content %></textarea>
+          <div class="field-hint"><span id="content-count">0 字</span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">保存修改</button>
+          <a class="btn btn--ghost" href="/posts/<%= post.id %>">取消</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">当前审核状态</h2>
+      <% const s = statusBadge(post.status); %>
+      <p class="mb-0"><span class="badge <%= s.cls %>"><%= s.name %></span></p>
+      <% if (post.ai_summary) { %>
+        <p class="text-xs text-mute" style="margin-top:8px"><%= post.ai_summary %></p>
+      <% } %>
+      <% if (post.reject_reason) { %>
+        <p class="text-xs text-danger">驳回原因：<%= post.reject_reason %></p>
+      <% } %>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

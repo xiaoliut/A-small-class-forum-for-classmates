@@ -1,0 +1,28 @@
+<%- include('partials/header', { title: title, activeNav: '', hidePendingBanner: true }) %>
+
+<div class="card auth-card">
+  <div style="font-size:2.6rem"></div>
+  <h1>申请正在审核中</h1>
+  <p class="text-soft">
+    你的入班申请还没有通过审核，暂时无法发帖和评论。
+    管理员会核对你的学校和班级信息，通过后即可正常使用论坛。
+  </p>
+
+  <table class="data table--compact">
+    <tr><th>用户名</th><td class="mono"><%= currentUser.username %></td></tr>
+    <tr><th>昵称</th><td><%= currentUser.nickname %></td></tr>
+    <tr><th>学校 / 班级</th><td><%= currentUser.school %> · <%= currentUser.class_name %></td></tr>
+    <tr><th>真实姓名</th><td><%= currentUser.real_name %></td></tr>
+    <tr><th>提交时间</th><td><%= formatTime(currentUser.created_at) %></td></tr>
+  </table>
+
+  <div class="btn-row" style="margin-top:14px">
+    <a class="btn btn--ghost" href="/">先逛逛论坛</a>
+    <form action="/logout" method="post" class="inline-form">
+      <%- csrfInput %>
+      <button class="btn btn--ghost" type="submit">退出登录</button>
+    </form>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

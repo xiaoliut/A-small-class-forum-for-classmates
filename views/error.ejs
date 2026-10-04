@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card" style="text-align:center">
+  <div style="font-size:3rem"><%= code === 404 ? '' : '' %></div>
+  <h1><%= code %></h1>
+  <h2 style="font-weight:600;color:var(--text-soft)"><%= title %></h2>
+  <p class="text-soft"><%= message %></p>
+  <div class="btn-row" style="justify-content:center">
+    <a class="btn btn--primary" href="/">返回首页</a>
+    <a class="btn btn--ghost" href="javascript:history.back()">回到上一页</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

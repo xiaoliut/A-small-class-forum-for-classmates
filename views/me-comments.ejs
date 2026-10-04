@@ -1,0 +1,42 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>我的评论</h1>
+    <p class="page-head__sub">最近 100 条评论记录。</p>
+  </div>
+</div>
+
+<div class="card">
+  <% if (!comments.length) { %>
+    <div class="empty"><span class="empty__icon"></span>你还没有发表过评论。</div>
+  <% } else { %>
+    <ul class="comment-list">
+      <% comments.forEach(function (comment) { %>
+        <li class="comment <%= comment.status === 'hidden' ? 'comment--hidden' : '' %>">
+          <div class="comment__body">
+            <div class="comment__head">
+              <span class="text-mute text-xs">评论于</span>
+              <a href="/posts/<%= comment.post_id %>#comments"><%= comment.post_title %></a>
+              <span class="comment__time"><%= formatTime(comment.created_at) %></span>
+              <% if (comment.status === 'hidden') { %><span class="badge badge--danger">待复核</span><% } %>
+              <% if (comment.status === 'deleted') { %><span class="badge badge--muted">已删除</span><% } %>
+              <% if (comment.post_status === 'deleted') { %><span class="badge badge--muted">原帖已删除</span><% } %>
+            </div>
+            <p class="comment__text"><%= comment.content %></p>
+            <% if (comment.status !== 'deleted') { %>
+              <div class="comment__tools">
+                <form action="/me/comments/<%= comment.id %>/delete" method="post" class="inline-form" data-confirm="确定删除这条评论吗？">
+                  <%- csrfInput %>
+                  <button class="btn btn--ghost btn--sm" type="submit">删除</button>
+                </form>
+              </div>
+            <% } %>
+          </div>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

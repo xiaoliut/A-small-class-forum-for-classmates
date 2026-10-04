@@ -1,0 +1,31 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card auth-card--wide">
+  <h1>注销账号</h1>
+
+  <% if (deletion) { %>
+    <div class="alert alert--info">
+      你已提交注销申请（<%= deletion.status === 'cooling' ? '已通过，冷静期至 ' + formatTime(deletion.cooling_until) : '待审核' %>），请勿重复提交。
+    </div>
+    <a class="btn btn--ghost" href="/me">返回个人中心</a>
+  <% } else { %>
+    <p class="text-mute text-sm">
+      注销后账号将无法登录，昵称和资料会被清空，但已发布的帖子、评论会保留（显示为「已注销」）。<br>
+      流程：填写理由 → 审核通过 → <strong>7 天冷静期</strong> → 到期自动注销。
+    </p>
+
+    <form action="/me/delete-account" method="post">
+      <%- csrfInput %>
+      <div class="form-row">
+        <label class="field-label required" for="reason">注销理由</label>
+        <textarea id="reason" name="reason" required maxlength="200" placeholder="例如：毕业离校，不再使用本论坛"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn--danger" type="submit" data-confirm="确定提交注销申请吗？通过后进入 7 天冷静期，到期自动注销。">提交注销申请</button>
+        <a class="btn btn--ghost" href="/me">取消</a>
+      </div>
+    </form>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

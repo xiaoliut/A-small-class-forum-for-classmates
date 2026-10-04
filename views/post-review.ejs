@@ -1,0 +1,86 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card">
+      <h1>AI 审核结果</h1>
+      <p class="text-soft text-sm">
+        帖子《<%= post.title %>》提交后已经过一次自动检测。下面是检测结论，
+        管理员复核通过后帖子就会公开显示。
+      </p>
+
+      <% const s = statusBadge(post.status); %>
+      <% const ai = aiBadge(post.ai_verdict); %>
+      <% const risk = riskBadge(post.ai_risk); %>
+
+      <div class="stat-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+        <div class="stat">
+          <div class="stat__label">当前状态</div>
+          <div style="margin-top:4px"><span class="badge <%= s.cls %>"><%= s.name %></span></div>
+        </div>
+        <div class="stat">
+          <div class="stat__label">AI 判定</div>
+          <div style="margin-top:4px"><span class="badge <%= ai.cls %>"><%= ai.name %></span></div>
+        </div>
+        <div class="stat">
+          <div class="stat__label">风险分</div>
+          <div style="margin-top:4px"><span class="badge <%= risk.cls %>"><%= post.ai_risk %> / 100</span></div>
+        </div>
+      </div>
+
+      <div class="ai-panel" style="margin-top:16px">
+        <div class="ai-panel__head">检测说明</div>
+        <div><%= post.ai_summary || '暂无检测记录。' %></div>
+        <% if (labels.length) { %>
+          <div class="tag-list" style="margin-top:8px">
+            <% labels.forEach(function (label) { %><span class="badge"><%= label %></span><% }); %>
+          </div>
+        <% } %>
+        <div class="text-xs text-mute" style="margin-top:8px">
+          检测来源：<%= post.ai_source === 'rules' ? '本地规则引擎（离线）' : (post.ai_source || '—') %>
+        </div>
+      </div>
+
+      <% if (post.status === 'flagged' || post.ai_verdict === 'violation') { %>
+        <div class="alert alert--danger" style="margin-top:16px">
+          <strong>系统提示：</strong>这段内容可能涉及班级论坛不鼓励发布的信息。
+          这不是处罚，管理员会人工确认。如果确认违规，帖子会被驳回；如果是误判，会正常公开。
+        </div>
+      <% } else if (post.status === 'pending') { %>
+        <div class="alert alert--warn" style="margin-top:16px">
+          <strong>需要人工确认：</strong>AI 对这段内容不够确定，已转交管理员复核，通常一天内会有结果。
+        </div>
+      <% } %>
+
+      <div class="alert alert--info">
+        <strong>接下来：</strong>
+        <ul>
+          <li>管理员通过后，帖子会自动出现在首页与对应分区；</li>
+          <li>如果被驳回，你可以<a href="/posts/<%= post.id %>/edit">修改内容</a>后重新提交；</li>
+          <li>想了解规则细节，可以阅读<a href="/rules">论坛使用规范</a>。</li>
+        </ul>
+      </div>
+
+      <div class="btn-row">
+        <a class="btn btn--primary" href="/posts/<%= post.id %>">查看帖子页面</a>
+        <a class="btn btn--ghost" href="/posts/<%= post.id %>/edit">修改内容</a>
+        <a class="btn btn--ghost" href="/me/posts">我的帖子</a>
+      </div>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">AI 是怎么判断的？</h2>
+      <ul class="notice-list">
+        <li>先扫描广告、外链、辱骂、低俗、联系方式等规则特征；</li>
+        <li>命中较多特征的，风险分升高；</li>
+        <li>风险分 ≥ 60 判为违规，20-59 建议人工复核，低于 20 视为正常；</li>
+        <li>配置了大模型 API 时，会同时参考模型给出的语义判断。</li>
+      </ul>
+      <p class="text-xs text-mute mb-0">AI 只做初筛，最终由管理员决定。</p>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

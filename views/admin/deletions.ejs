@@ -1,0 +1,69 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>销号申请</h1>
+    <p class="page-head__sub">成员销号由管理员审核，管理员销号由超级管理员审核；通过后进入 7 天冷静期，到期自动注销。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'deletions' }) %>
+
+<% if (!deletions.length) { %>
+  <div class="card">
+    <div class="empty"><span class="empty__icon"></span>当前没有待处理的销号申请。</div>
+  </div>
+<% } else { %>
+  <% deletions.forEach(function (d) { %>
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">
+          <%= d.nickname %>
+          <span class="badge <%= d.user_role === 'admin' ? 'badge--ok' : '' %>"><%= d.user_role === 'admin' ? '管理员' : '同学' %></span>
+          <span class="badge <%= d.status === 'cooling' ? 'badge--warn' : '' %>"><%= d.status === 'cooling' ? '冷静期中' : '待审核' %></span>
+        </h2>
+        <span class="card__hint">申请于 <%= formatTime(d.created_at) %>（<%= fromNow(d.created_at) %>）</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data table--compact">
+          <tbody>
+            <tr>
+              <th style="width:110px">用户名</th><td class="mono"><%= d.username %></td>
+              <th style="width:110px">班级</th><td><%= d.class_name %></td>
+            </tr>
+            <tr>
+              <th>注销理由</th><td colspan="3"><%= d.reason || '—' %></td>
+            </tr>
+            <% if (d.status === 'cooling') { %>
+              <tr><th>冷静期至</th><td colspan="3"><%= formatTime(d.cooling_until) %></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (d.status === 'pending') { %>
+        <% if (d.user_role === 'admin' && !currentUser.isSuperAdmin) { %>
+          <p class="text-mute text-sm mb-0">该申请由管理员提交，仅超级管理员可审核。</p>
+        <% } else if (d.requester_id === currentUser.id) { %>
+          <p class="text-mute text-sm mb-0">不能审核自己发起的申请。</p>
+        <% } else { %>
+          <div class="card__head" style="margin:14px 0 0">
+            <div class="inline-controls">
+              <form action="/admin/deletions/<%= d.id %>/approve" method="post" data-confirm="确定通过 <%= d.nickname %> 的销号申请吗？将进入 7 天冷静期。">
+                <%- csrfInput %>
+                <button class="btn btn--ok btn--sm" type="submit">通过（进入冷静期）</button>
+              </form>
+              <form action="/admin/deletions/<%= d.id %>/reject" method="post">
+                <%- csrfInput %>
+                <button class="btn btn--ghost btn--sm" type="submit">驳回</button>
+              </form>
+            </div>
+          </div>
+        <% } %>
+      <% } %>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

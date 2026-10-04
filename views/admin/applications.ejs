@@ -1,0 +1,64 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>入班申请</h1>
+    <p class="page-head__sub">核对同学提交的学校、班级与真实姓名，通过后即可登录论坛。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'applications' }) %>
+
+<% if (!applications.length) { %>
+  <div class="card">
+    <div class="empty"><span class="empty__icon"></span>当前没有待处理的申请。</div>
+  </div>
+<% } else { %>
+  <% applications.forEach(function (application) { %>
+    <% const us = userStatusBadge(application.status); %>
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">
+          <%= application.nickname %>
+          <span class="badge <%= us.cls %>"><%= us.name %></span>
+        </h2>
+        <span class="card__hint">提交于 <%= formatTime(application.created_at) %>（<%= fromNow(application.created_at) %>）</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data table--compact">
+          <tbody>
+            <tr><th style="width:110px">用户名</th><td class="mono"><%= application.username %></td>
+                <th style="width:110px">真实姓名</th><td><%= application.real_name %></td></tr>
+            <tr><th>学校</th><td><%= application.school %></td>
+                <th>班级</th><td><%= application.class_name %></td></tr>
+            <tr><th>学号</th><td><%= application.student_no || '—' %></td>
+                <th>邮箱</th><td><%= application.email || '—' %></td></tr>
+            <tr><th>手机号</th><td><%= application.phone || '—' %></td>
+                <th>申请说明</th><td><%= application.apply_reason || '—' %></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (application.status === 'rejected' && application.ban_reason) { %>
+        <p class="text-xs text-danger">上次驳回原因：<%= application.ban_reason %></p>
+      <% } %>
+
+      <div class="card__head" style="margin:14px 0 0;align-items:flex-start">
+        <div class="inline-controls">
+          <form action="/admin/users/<%= application.id %>/approve" method="post">
+            <%- csrfInput %>
+            <button class="btn btn--ok btn--sm" type="submit">通过申请</button>
+          </form>
+          <form action="/admin/users/<%= application.id %>/reject" method="post">
+            <%- csrfInput %>
+            <input type="text" name="reason" placeholder="驳回原因（选填）" maxlength="200" style="width:220px" aria-label="驳回原因（选填）">
+            <button class="btn btn--warn btn--sm" type="submit">驳回</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

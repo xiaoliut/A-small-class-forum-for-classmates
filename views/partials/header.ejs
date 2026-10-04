@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <meta name="description" content="<%= site.siteDescription || siteName %>">
+  <title><%= title %> · <%= siteName %></title>
+  <link rel="stylesheet" href="/static/css/style.css?v=12">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'></text></svg>">
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark"></span>
+      <span class="brand__text"><%= siteName %></span>
+    </a>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="展开导航">
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="展开导航">
+      <span></span><span></span><span></span>
+    </label>
+
+    <nav class="nav">
+      <a class="nav__link <%= activeNav === 'home' ? 'is-active' : '' %>" href="/">首页</a>
+      <a class="nav__link <%= activeNav === 'sections' ? 'is-active' : '' %>" href="/sections">分区</a>
+      <% if (currentUser && currentUser.status === 'approved' && !currentUser.isMuted) { %>
+        <a class="nav__link <%= activeNav === 'new' ? 'is-active' : '' %>" href="/posts/new">发帖</a>
+      <% } %>
+      <a class="nav__link <%= activeNav === 'rules' ? 'is-active' : '' %>" href="/rules">规范</a>
+      <% if (currentUser && currentUser.isAdmin) { %>
+        <a class="nav__link <%= activeNav === 'admin' ? 'is-active' : '' %>" href="/admin">
+          管理后台
+          <% if (typeof pendingBadge !== 'undefined' && pendingBadge > 0) { %><span class="nav__dot"></span><% } %>
+        </a>
+      <% } %>
+
+      <div class="nav__user">
+        <% if (currentUser) { %>
+          <a class="nav__me" href="/me">
+            <%- avatarHtml(currentUser) %>
+            <span class="nav__me-name"><%= currentUser.nickname %></span>
+          </a>
+          <form action="/logout" method="post" class="inline-form">
+            <%- csrfInput %>
+            <button type="submit" class="btn btn--ghost btn--sm">退出</button>
+          </form>
+        <% } else { %>
+          <a class="btn btn--ghost btn--sm" href="/login">登录</a>
+          <% if (!featureFlags || featureFlags.allowRegister !== false) { %>
+            <a class="btn btn--ghost btn--sm" href="/register">申请加入</a>
+          <% } %>
+        <% } %>
+      </div>
+    </nav>
+  </div>
+</header>
+
+
+<main class="container page">
+  <% if (currentUser && currentUser.status !== 'approved' && typeof hidePendingBanner === 'undefined') { %>
+    <div class="alert alert--warn">
+      你的入班申请还在审核中，通过后才能发帖和评论。
+      <% if (currentUser.isAdmin) { %>（管理员账号状态异常，请联系超级管理员）<% } %>
+    </div>
+  <% } %>
+
+  <% if (currentUser && currentUser.isMuted) { %>
+    <div class="alert alert--warn">
+      你正处于禁言状态（至 <%= formatTime(currentUser.mute_until) %>），暂时不能发帖和评论。
+    </div>
+  <% } %>
+
+  <% flash.forEach(function (item) { %>
+    <div class="alert alert--<%= item.type === 'error' ? 'danger' : (item.type === 'success' ? 'success' : 'info') %>"><%= item.message %></div>
+  <% }); %>

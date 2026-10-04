@@ -1,0 +1,179 @@
+<%- include('partials/header', { title: title, activeNav: 'home' }) %>
+
+<div class="hero">
+  <h1><%= site.welcomeMessage || ('欢迎来到 ' + siteName) %></h1>
+  <p><%= site.siteDescription || '' %></p>
+  <div class="hero__actions">
+    <% if (currentUser && currentUser.status === 'approved') { %>
+      <a class="btn btn--primary" href="/posts/new">我要发帖</a>
+    <% } else if (!currentUser) { %>
+      <a class="btn btn--primary" href="/register">申请加入班级</a>
+      <a class="btn btn--ghost" href="/login">已有账号，登录</a>
+    <% } else { %>
+      <a class="btn btn--ghost" href="/pending">申请审核中…</a>
+    <% } %>
+    <a class="btn btn--ghost" href="/rules">阅读论坛规范</a>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <% if (pinnedNotices.length) { %>
+      <section class="section-title" style="margin-top:0">置顶公告</section>
+      <div class="card card--tight" style="padding:0">
+        <ul class="post-list">
+          <% pinnedNotices.forEach(function (post) { %>
+            <li class="post-item post-item--pinned">
+              <div class="post-item__body">
+                <div class="post-item__title">
+                  <span class="badge badge--accent">公告</span>
+                  <a href="/posts/<%= post.id %>"><%= post.title %></a>
+                </div>
+                <div class="post-item__meta">
+                  <span><%= post.nickname %></span>
+                  <span><%= fromNow(post.created_at) %></span>
+                  <span><%= post.comment_count %></span>
+                </div>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+
+    <section class="section-title">最新讨论</section>
+
+    <form class="filters" action="/" method="get">
+      <% if (section) { %><input type="hidden" name="section" value="<%= section %>"><% } %>
+      <div class="search-form">
+        <input type="search" name="q" value="<%= keyword %>" placeholder="搜索帖子标题或内容…" maxlength="40" aria-label="搜索帖子">
+        <button class="btn btn--ghost" type="submit">搜索</button>
+      </div>
+    </form>
+
+    <div class="filters">
+      <a class="chip <%= !section ? 'is-active' : '' %>" href="/<%= buildQuery({ q: keyword }) %>">全部</a>
+      <% sections.forEach(function (item) { %>
+        <a class="chip <%= section === item.key ? 'is-active' : '' %>" href="/<%= buildQuery({ section: item.key, q: keyword }) %>">
+          <%= item.icon %> <%= item.name %>
+        </a>
+      <% }); %>
+    </div>
+
+    <% if (keyword) { %>
+      <p class="text-mute text-sm">搜索「<%= keyword %>」共找到 <%= total %> 条结果 · <a href="/">清除搜索</a></p>
+    <% } %>
+
+    <div class="card" style="padding:0">
+      <% if (!posts.length) { %>
+        <div class="empty">
+          <span class="empty__icon"></span>
+          这里还很安静，来发第一篇帖子吧。
+        </div>
+      <% } else { %>
+        <ul class="post-list">
+          <% posts.forEach(function (post) { %>
+            <li class="post-item <%= post.pinned ? 'post-item--pinned' : '' %>">
+              <% if (post.cover) { %>
+                <div class="post-item__cover">
+                  <img src="<%= post.cover %>" alt="封面图" loading="lazy">
+                </div>
+              <% } %>
+              <div class="post-item__body">
+                <div class="post-item__title">
+                  <% if (post.pinned) { %><span class="badge badge--accent">置顶</span><% } %>
+                  <% if (post.is_notice) { %><span class="badge badge--info">公告</span><% } %>
+                  <span class="badge"><%= sectionMeta(post.section).icon %> <%= sectionMeta(post.section).name %></span>
+                  <a class="post-item__link" href="/posts/<%= post.id %>"><%= post.title %></a>
+                </div>
+                <p class="post-item__excerpt"><%= post.content.replace(/\s+/g, ' ').slice(0, 120) %></p>
+                <div class="post-item__meta">
+                  <%- avatarHtml(post, 'avatar--gray') %>
+                  <span><%= post.nickname %><% if (post.author_role === 'admin') { %> · 管理员<% } %></span>
+                  <span><%= post.author_class || post.class_name %></span>
+                  <span><%= fromNow(post.created_at) %></span>
+                  <span><%= post.view_count %></span>
+                  <span><%= post.comment_count %></span>
+                </div>
+              </div>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+
+    <% if (totalPages > 1) { %>
+      <nav class="pagination">
+        <% if (page > 1) { %>
+          <a href="/<%= buildQuery({ section: section, q: keyword, page: page - 1 }) %>">上一页</a>
+        <% } else { %>
+          <span class="is-disabled">上一页</span>
+        <% } %>
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <% if (i === page) { %>
+            <span class="is-current"><%= i %></span>
+          <% } else { %>
+            <a href="/<%= buildQuery({ section: section, q: keyword, page: i }) %>"><%= i %></a>
+          <% } %>
+        <% } %>
+        <% if (page < totalPages) { %>
+          <a href="/<%= buildQuery({ section: section, q: keyword, page: page + 1 }) %>">下一页</a>
+        <% } else { %>
+          <span class="is-disabled">下一页</span>
+        <% } %>
+      </nav>
+    <% } %>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:12px">班级数据</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat__value"><%= stats.members %></div>
+          <div class="stat__label">在班同学</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value"><%= stats.posts %></div>
+          <div class="stat__label">公开帖子</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value"><%= stats.comments %></div>
+          <div class="stat__label">评论总数</div>
+        </div>
+        <div class="stat">
+          <div class="stat__value"><%= stats.today %></div>
+          <div class="stat__label">24 小时新帖</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">活跃同学</h2>
+      <% if (!activeMembers.length) { %>
+        <p class="text-mute text-sm mb-0">还没有统计数据。</p>
+      <% } else { %>
+        <ul class="member-list">
+          <% activeMembers.forEach(function (member) { %>
+            <li>
+              <%- avatarHtml(member) %>
+              <span><%= member.nickname %></span>
+              <span class="member-meta"><%= member.post_count %> 帖</span>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">小贴士</h2>
+      <ul class="notice-list">
+        <li>公告与置顶帖由管理员发布，请优先阅读。</li>
+        <li>新帖会先经过 AI 检测，正常内容几秒内即可公开。</li>
+        <li>看到不合适的内容，点帖子里的「举报」告诉管理员。</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

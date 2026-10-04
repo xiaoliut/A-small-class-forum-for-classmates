@@ -1,0 +1,89 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>举报处理</h1>
+    <p class="page-head__sub">同学提交的举报都会出现在这里，处理后请标记状态。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'reports' }) %>
+
+<% if (!reports.length) { %>
+  <div class="card"><div class="empty"><span class="empty__icon"></span>还没有收到任何举报。</div></div>
+<% } else { %>
+  <% reports.forEach(function (report) { %>
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">
+          <span class="badge <%= report.status === 'open' ? 'badge--warn' : (report.status === 'ignored' ? 'badge--muted' : 'badge--ok') %>">
+            <%= report.status === 'open' ? '待处理' : (report.status === 'ignored' ? '已忽略' : '已处理') %>
+          </span>
+          <span class="badge"><%= report.reason %></span>
+          <%= report.target_type === 'post' ? '帖子' : '评论' %>
+        </h2>
+        <span class="card__hint"><%= formatTime(report.created_at) %>（<%= fromNow(report.created_at) %>）</span>
+      </div>
+
+      <p class="text-sm text-soft mb-0">
+        举报人：<%= report.reporter_name %>（<%= report.reporter_real_name %>）
+      </p>
+
+      <div class="queue-item__content" style="margin-top:10px">
+        <% if (report.target_type === 'post') { %>
+          <strong>被举报帖子：</strong>
+          <% if (report.post_title) { %>
+            <a href="/posts/<%= report.target_id %>"><%= report.post_title %></a>
+            <span class="badge <%= statusBadge(report.post_status).cls %>"><%= statusBadge(report.post_status).name %></span>
+          <% } else { %>
+            <span class="text-mute">该帖子已被删除（#<%= report.target_id %>）</span>
+          <% } %>
+        <% } else { %>
+          <strong>被举报评论：</strong>
+          <% if (report.comment_content) { %>
+            <div style="margin-top:6px"><%= report.comment_content %></div>
+            <a class="btn btn--ghost btn--sm" style="margin-top:8px" href="/posts/<%= report.comment_post_id || 0 %>#comments">前往原帖</a>
+          <% } else { %>
+            <span class="text-mute">该评论已被删除（#<%= report.target_id %>）</span>
+          <% } %>
+        <% } %>
+        <% if (report.detail) { %><div class="text-xs text-mute" style="margin-top:8px">补充说明：<%= report.detail %></div><% } %>
+      </div>
+
+      <div class="queue-item__foot">
+        <% if (report.target_type === 'post' && report.post_title) { %>
+          <a class="btn btn--ghost btn--sm" href="/posts/<%= report.target_id %>">查看帖子</a>
+          <a class="btn btn--ghost btn--sm" href="/admin/posts/<%= report.target_id %>/edit">编辑帖子</a>
+          <form action="/admin/posts/<%= report.target_id %>/delete" method="post" data-confirm="确定删除被举报的帖子吗？">
+            <%- csrfInput %>
+            <input type="hidden" name="reason" value="举报核实：<%= report.reason %>">
+            <button class="btn btn--danger btn--sm" type="submit">删除帖子</button>
+          </form>
+        <% } %>
+        <% if (report.target_type === 'comment' && report.comment_status && report.comment_status !== 'deleted') { %>
+          <form action="/admin/comments/<%= report.target_id %>/delete" method="post" data-confirm="确定删除被举报的评论吗？">
+            <%- csrfInput %>
+            <button class="btn btn--danger btn--sm" type="submit">删除评论</button>
+          </form>
+        <% } %>
+
+        <% if (report.status === 'open') { %>
+          <form action="/admin/reports/<%= report.id %>/resolve" method="post">
+            <%- csrfInput %>
+            <input type="hidden" name="result" value="handled">
+            <button class="btn btn--ok btn--sm" type="submit">标记已处理</button>
+          </form>
+          <form action="/admin/reports/<%= report.id %>/resolve" method="post">
+            <%- csrfInput %>
+            <input type="hidden" name="result" value="ignored">
+            <button class="btn btn--ghost btn--sm" type="submit">举报不成立</button>
+          </form>
+        <% } else { %>
+          <span class="text-mute text-xs">处理时间：<%= formatTime(report.handled_at) %></span>
+        <% } %>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

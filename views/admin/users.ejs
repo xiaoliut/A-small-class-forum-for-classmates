@@ -1,0 +1,170 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>用户管理</h1>
+    <p class="page-head__sub">禁言适合提醒式处罚，封号用于严重或多次违规。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'users' }) %>
+
+<form class="filters" action="/admin/users" method="get">
+  <div class="search-form">
+    <input type="search" name="q" value="<%= keyword %>" placeholder="搜索用户名 / 昵称 / 姓名 / 班级" aria-label="搜索用户">
+    <button class="btn btn--ghost" type="submit">搜索</button>
+  </div>
+</form>
+
+<div class="filters">
+  <a class="chip <%= !status ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ q: keyword }) %>">全部</a>
+  <a class="chip <%= status === 'pending' ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ status: 'pending', q: keyword }) %>">待审核</a>
+  <a class="chip <%= status === 'approved' ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ status: 'approved', q: keyword }) %>">正常</a>
+  <a class="chip <%= status === 'banned' ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ status: 'banned', q: keyword }) %>">已封禁</a>
+  <a class="chip <%= status === 'rejected' ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ status: 'rejected', q: keyword }) %>">已驳回</a>
+  <a class="chip <%= status === 'deleted' ? 'is-active' : '' %>" href="/admin/users<%= buildQuery({ status: 'deleted', q: keyword }) %>">已注销</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="data">
+      <thead>
+        <tr>
+          <th>同学</th>
+          <th>身份</th>
+          <th>状态</th>
+          <th>发帖 / 评论</th>
+          <th>注册时间</th>
+          <th>处罚操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(function (user) { %>
+          <% const us = userStatusBadge(user.status); %>
+          <% const isMuted = user.mute_until && new Date(user.mute_until).getTime() > Date.now(); %>
+          <tr>
+            <td>
+              <div style="display:flex;gap:8px;align-items:center">
+                <%- avatarHtml(user, (user.role === 'admin' || user.role === 'superadmin') ? '' : 'avatar--gray') %>
+                <div>
+                  <div style="font-weight:700"><%= user.nickname %></div>
+                  <div class="text-xs text-mute">
+                    <span class="mono"><%= user.username %></span> · <%= user.real_name %> · <%= user.class_name %>
+                  </div>
+                  <div class="text-xs text-mute">
+                    <% if (user.email || user.phone) { %>
+                      <% if (user.email) { %>邮箱 <span class="mono"><%= user.email %></span><% } %>
+                      <% if (user.email && user.phone) { %> · <% } %>
+                      <% if (user.phone) { %>手机 <span class="mono"><%= user.phone %></span><% } %>
+                    <% } else { %>未填联系方式<% } %>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="cell-nowrap">
+              <% if (user.role === 'superadmin') { %><span class="badge badge--accent">超级管理员</span>
+              <% } else if (user.role === 'admin') { %><span class="badge badge--ok">管理员</span>
+              <% } else { %><span class="badge">同学</span><% } %>
+            </td>
+            <td class="cell-nowrap">
+              <span class="badge <%= us.cls %>"><%= us.name %></span>
+              <% if (isMuted) { %><br><span class="badge badge--warn">禁言至 <%= formatTime(user.mute_until) %></span><% } %>
+              <% if (user.ban_reason) { %><div class="text-xs text-danger" style="max-width:200px"><%= user.ban_reason %></div><% } %>
+            </td>
+            <td class="cell-nowrap text-mute"><%= user.post_count %> / <%= user.comment_count %></td>
+            <td class="cell-nowrap text-mute text-xs">
+              <%= formatTime(user.created_at) %><br>
+              <% if (user.last_login_at) { %>上次登录 <%= fromNow(user.last_login_at) %><% } else { %>从未登录<% } %>
+            </td>
+            <td>
+              <% if (user.status === 'deleted') { %>
+                <span class="text-mute text-xs">已注销，不可操作</span>
+              <% } else if (user.role === 'superadmin') { %>
+                <span class="text-mute text-xs">超级管理员账号，不可操作</span>
+              <% } else if (user.role === 'admin' && !currentUser.isSuperAdmin) { %>
+                <span class="text-mute text-xs">仅超级管理员可操作管理员</span>
+              <% } else { %>
+                <div class="inline-controls">
+                  <% if (currentUser.isSuperAdmin) { %>
+                    <% if (user.role === 'admin') { %>
+                      <form action="/admin/users/<%= user.id %>/demote" method="post" data-confirm="确定移除 <%= user.nickname %> 的管理员身份吗？">
+                        <%- csrfInput %>
+                        <button class="btn btn--ghost btn--sm" type="submit">移除管理员</button>
+                      </form>
+                    <% } else if (user.status === 'approved') { %>
+                      <form action="/admin/users/<%= user.id %>/promote" method="post" data-confirm="确定将 <%= user.nickname %> 设为管理员吗？">
+                        <%- csrfInput %>
+                        <button class="btn btn--ok btn--sm" type="submit">设为管理员</button>
+                      </form>
+                    <% } %>
+                  <% } %>
+
+                  <form action="/admin/users/<%= user.id %>/name" method="post" class="inline-controls">
+                    <%- csrfInput %>
+                    <input type="text" name="real_name" value="<%= user.real_name %>" maxlength="20" style="width:100px" aria-label="真实姓名">
+                    <button class="btn btn--ghost btn--sm" type="submit">申请改名</button>
+                  </form>
+
+                  <form action="/admin/users/<%= user.id %>/mute" method="post">
+                    <%- csrfInput %>
+                    <select name="mode" aria-label="禁言时长">
+                      <option value="hours">禁言 1 小时</option>
+                      <option value="days" selected>禁言 1 天</option>
+                      <option value="week">禁言 7 天</option>
+                      <option value="month">禁言 30 天</option>
+                      <option value="forever">长期禁言</option>
+                    </select>
+                    <input type="text" name="reason" placeholder="禁言原因" maxlength="200" style="width:130px" aria-label="禁言原因">
+                    <button class="btn btn--warn btn--sm" type="submit">禁言</button>
+                  </form>
+
+                  <% if (isMuted) { %>
+                    <form action="/admin/users/<%= user.id %>/mute" method="post">
+                      <%- csrfInput %>
+                      <input type="hidden" name="mode" value="lift">
+                      <button class="btn btn--ghost btn--sm" type="submit">解除禁言</button>
+                    </form>
+                  <% } %>
+
+                  <% if (user.status === 'banned') { %>
+                    <form action="/admin/users/<%= user.id %>/unban" method="post">
+                      <%- csrfInput %>
+                      <button class="btn btn--ok btn--sm" type="submit">解除封禁</button>
+                    </form>
+                  <% } else { %>
+                    <form action="/admin/users/<%= user.id %>/ban" method="post" class="inline-controls" data-confirm="确定封禁 <%= user.nickname %> 吗？该账号将无法登录论坛。">
+                      <%- csrfInput %>
+                      <input type="text" name="reason" placeholder="封禁原因" maxlength="200" style="width:130px" aria-label="封禁原因">
+                      <button class="btn btn--danger btn--sm" type="submit">封号</button>
+                    </form>
+                  <% } %>
+
+                  <% if (currentUser.isSuperAdmin) { %>
+                    <form action="/admin/users/<%= user.id %>/delete" method="post" data-confirm="确定删除 <%= user.nickname %> 的账号吗？此操作不可撤销。">
+                      <%- csrfInput %>
+                      <button class="btn btn--danger btn--sm" type="submit">删除账号</button>
+                    </form>
+                  <% } else { %>
+                    <form action="/admin/users/<%= user.id %>/delete" method="post" data-confirm="确定为 <%= user.nickname %> 提交删除申请吗？需超级管理员审核。">
+                      <%- csrfInput %>
+                      <button class="btn btn--ghost btn--sm" type="submit">申请删除</button>
+                    </form>
+                  <% } %>
+
+                  <% if (user.status === 'pending' || user.status === 'rejected') { %>
+                    <form action="/admin/users/<%= user.id %>/approve" method="post">
+                      <%- csrfInput %>
+                      <button class="btn btn--ok btn--sm" type="submit">通过申请</button>
+                    </form>
+                  <% } %>
+                </div>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

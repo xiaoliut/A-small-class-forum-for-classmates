@@ -1,0 +1,22 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card">
+  <div style="font-size:2.6rem"></div>
+  <h1>账号已被封禁</h1>
+  <p class="text-soft">你的账号因违反班级论坛规范被管理员封禁，暂时无法访问论坛功能。</p>
+
+  <% if (currentUser && currentUser.ban_reason) { %>
+    <div class="alert alert--danger">封禁原因：<%= currentUser.ban_reason %></div>
+  <% } %>
+
+  <p class="text-mute text-sm">
+    如果你认为这是一次误判，可以线下联系超级管理员说明情况。
+  </p>
+
+  <form action="/logout" method="post" class="inline-form">
+    <%- csrfInput %>
+    <button class="btn btn--ghost" type="submit">退出登录</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

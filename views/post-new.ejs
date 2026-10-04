@@ -1,0 +1,99 @@
+<%- include('partials/header', { title: title, activeNav: 'new' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>发布新帖</h1>
+    <p class="page-head__sub">提交后会立即进行 AI 检测：正常内容自动公开，拿不准的会先交给管理员复核。</p>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card">
+      <% if (noticeOnly) { %>
+        <div class="alert alert--warn">「公告通知」分区只有管理员可以发布，你的帖子会进入综合讨论分区。</div>
+      <% } %>
+
+      <form action="/posts" method="post">
+        <%- csrfInput %>
+
+        <div class="form-row">
+          <label class="field-label required" for="title">标题</label>
+          <input type="text" id="title" name="title" value="<%= form.title %>" required minlength="4" maxlength="80"
+                 placeholder="用一句话说清楚你想讨论什么">
+          <div class="field-hint">4-80 字，写清主题能让同学更快回复你。</div>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label required" for="section">分区</label>
+          <select id="section" name="section">
+            <% sections.forEach(function (item) { %>
+              <% if (item.adminOnly && (!currentUser || currentUser.role !== 'admin')) return; %>
+              <option value="<%= item.key %>" <%= form.section === item.key ? 'selected' : '' %>>
+                <%= item.icon %> <%= item.name %> —— <%= item.desc %>
+              </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label required" for="content">正文</label>
+          <textarea id="content" name="content" class="textarea--tall" required maxlength="5000"
+                    data-counter="content-count" placeholder="写下你的问题、想法或通知内容…"><%= form.content %></textarea>
+          <div class="field-hint"><span id="content-count">0 字</span> · 支持换行、图片和表情。</div>
+
+          <div class="image-uploader" data-image-uploader data-target="content">
+            <div class="image-uploader__grid" data-preview></div>
+            <div class="image-uploader__bar">
+              <button type="button" class="btn btn--ghost btn--sm" data-pick>添加图片</button>
+              <input type="file" data-file accept=".jpg,.jpeg,.png,.gif,.webp,image/*" multiple hidden>
+              <button type="button" class="btn btn--ghost btn--sm" data-emoji>表情</button>
+            </div>
+            <div class="emoji-panel" data-emoji-panel hidden></div>
+            <input type="hidden" name="images" data-images value="<%= form.images || '' %>">
+            <div class="field-hint">支持 jpg / png / gif（动图）/ webp，最多 9 张；不支持文件和视频。</div>
+          </div>
+
+          <div class="image-uploader" data-image-uploader data-target="content" data-max="1">
+            <label class="field-label" style="margin-top:12px">封面图（可选，列表里显示）</label>
+            <div class="image-uploader__grid" data-preview></div>
+            <div class="image-uploader__bar">
+              <button type="button" class="btn btn--ghost btn--sm" data-pick>上传封面图</button>
+              <input type="file" data-file accept=".jpg,.jpeg,.png,.gif,.webp,image/*" hidden>
+            </div>
+            <input type="hidden" name="cover" data-images value="<%= form.cover || '' %>">
+            <div class="field-hint">支持图片 / 动图（gif）；不传则列表不显示封面。</div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">提交并检测</button>
+          <a class="btn btn--ghost" href="/">取消</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title">AI 审核会看什么</h2>
+      <ul class="notice-list">
+        <li>广告、外链、拉人加微信、二手交易</li>
+        <li>💢 辱骂、人身攻击、挑衅用语</li>
+        <li>🔞 违法违禁与低俗内容</li>
+        <li>📵 手机号、社交账号等联系方式</li>
+      </ul>
+      <p class="text-mute text-xs mb-0">被标记不代表处罚，管理员复核通过后照样会公开显示。</p>
+    </div>
+    <div class="card">
+      <h2 class="card__title">发帖小贴士</h2>
+      <ul class="notice-list">
+        <li>标题具体一点，别只写「求助」。</li>
+        <li>学习问题附上你的思路，回复会更多。</li>
+        <li>涉及同学隐私的内容记得打码或私聊。</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<%- include('partials/footer') %>

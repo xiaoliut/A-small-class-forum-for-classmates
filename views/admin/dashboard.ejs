@@ -1,0 +1,128 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>管理后台</h1>
+    <p class="page-head__sub">审核入班申请、复核 AI 标记的内容、处理举报与账号处罚。</p>
+  </div>
+  <a class="btn btn--ghost" href="/">返回论坛</a>
+</div>
+
+<%- include('partials/tabs', { tab: 'dashboard' }) %>
+
+<div class="stat-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px">
+  <a class="stat" href="/admin/applications" style="display:block">
+    <div class="stat__value"><%= counts.pendingUsers %></div>
+    <div class="stat__label">待审核入班申请</div>
+  </a>
+  <a class="stat" href="/admin/posts?tab=pending" style="display:block">
+    <div class="stat__value"><%= counts.pendingPosts %></div>
+    <div class="stat__label">待审核帖子</div>
+  </a>
+  <a class="stat" href="/admin/posts?tab=flagged" style="display:block">
+    <div class="stat__value text-danger"><%= counts.flaggedPosts %></div>
+    <div class="stat__label">AI 判定违规待复核</div>
+  </a>
+  <a class="stat" href="/admin/comments" style="display:block">
+    <div class="stat__value text-danger"><%= counts.hiddenComments %></div>
+    <div class="stat__label">被隐藏的评论</div>
+  </a>
+  <a class="stat" href="/admin/reports" style="display:block">
+    <div class="stat__value"><%= counts.openReports %></div>
+    <div class="stat__label">待处理举报</div>
+  </a>
+  <a class="stat" href="/admin/users" style="display:block">
+    <div class="stat__value"><%= counts.mutedUsers %></div>
+    <div class="stat__label">禁言中的同学</div>
+  </a>
+  <a class="stat" href="/admin/users?status=banned" style="display:block">
+    <div class="stat__value"><%= counts.bannedUsers %></div>
+    <div class="stat__label">已封禁账号</div>
+  </a>
+  <div class="stat">
+    <div class="stat__value"><%= counts.aiViolations %></div>
+    <div class="stat__label">历史 AI 违规判定</div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="layout__main">
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">需要人工复核的内容</h2>
+        <a class="btn btn--ghost btn--sm" href="/admin/posts">全部待审</a>
+      </div>
+      <% if (!recentFlagged.length) { %>
+        <div class="empty" style="padding:24px 10px"><span class="empty__icon"></span>当前没有等待复核的内容，辛苦了！</div>
+      <% } else { %>
+        <% recentFlagged.forEach(function (post) { %>
+          <% let labels = []; try { labels = JSON.parse(post.ai_labels || '[]'); } catch (e) { labels = []; } %>
+          <div class="queue-item <%= post.status === 'flagged' ? 'queue-item--flag' : 'queue-item--warn' %>">
+            <div class="queue-item__head">
+              <% const s = statusBadge(post.status); %>
+              <span class="badge <%= s.cls %>"><%= s.name %></span>
+              <span class="badge <%= riskBadge(post.ai_risk).cls %>">风险 <%= post.ai_risk %></span>
+              <% labels.forEach(function (label) { %><span class="badge"><%= label %></span><% }); %>
+              <span class="text-mute text-xs"><%= post.nickname %> · <%= fromNow(post.created_at) %></span>
+            </div>
+            <div class="queue-item__title"><a href="/posts/<%= post.id %>"><%= post.title %></a></div>
+            <div class="queue-item__foot" style="margin-top:8px">
+              <a class="btn btn--ghost btn--sm" href="/admin/posts?tab=<%= post.status === 'flagged' ? 'flagged' : 'pending' %>">去审核</a>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">待处理举报</h2>
+        <a class="btn btn--ghost btn--sm" href="/admin/reports">全部举报</a>
+      </div>
+      <% if (!recentReports.length) { %>
+        <p class="text-mute text-sm mb-0">暂时没有新的举报。</p>
+      <% } else { %>
+        <ul class="notice-list">
+          <% recentReports.forEach(function (report) { %>
+            <li>
+              <span class="badge badge--warn"><%= report.reason %></span>
+              <%= report.target_type === 'post' ? '帖子' : '评论' %> #<%= report.target_id %>
+              <span class="text-mute text-xs">由 <%= report.reporter_name %> 举报 · <%= fromNow(report.created_at) %></span>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card">
+      <h2 class="card__title" style="margin-bottom:10px">最近操作日志</h2>
+      <% if (!logs.length) { %>
+        <p class="text-mute text-sm mb-0">还没有操作记录。</p>
+      <% } else { %>
+        <ul class="notice-list">
+          <% logs.forEach(function (log) { %>
+            <li class="text-sm">
+              <strong><%= log.admin_name || '系统' %></strong>
+              <span class="text-mute text-xs"><%= fromNow(log.created_at) %></span><br>
+              <span class="text-soft"><%= log.detail || log.action %></span>
+            </li>
+          <% }); %>
+        </ul>
+      <% } %>
+      <a class="btn btn--ghost btn--sm btn--block" style="margin-top:10px" href="/admin/logs">查看完整日志</a>
+    </div>
+
+    <div class="card">
+      <h2 class="card__title">管理小贴士</h2>
+      <ul class="notice-list">
+        <li>AI 判定只是初筛，请结合上下文判断，避免误伤同学。</li>
+        <li>「警告」比直接删除更温和，适合提醒措辞问题。</li>
+        <li>封号属于重处罚，建议先禁言并说明原因。</li>
+      </ul>
+    </div>
+  </aside>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,62 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>评论管理</h1>
+    <p class="page-head__sub">被 AI 判定违规的评论会先自动隐藏，复核后可以放行或删除。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'comments' }) %>
+
+<div class="filters">
+  <a class="chip <%= tab === 'hidden' ? 'is-active' : '' %>" href="/admin/comments?tab=hidden">待复核（AI 隐藏）<%= counts.hidden %></a>
+  <a class="chip <%= tab === 'visible' ? 'is-active' : '' %>" href="/admin/comments?tab=visible">正常展示 <%= counts.visible %></a>
+  <a class="chip <%= tab === 'deleted' ? 'is-active' : '' %>" href="/admin/comments?tab=deleted">已删除</a>
+  <a class="chip <%= tab === 'all' ? 'is-active' : '' %>" href="/admin/comments?tab=all">全部</a>
+</div>
+
+<% if (!comments.length) { %>
+  <div class="card"><div class="empty"><span class="empty__icon"></span>这个队列没有内容。</div></div>
+<% } else { %>
+  <% comments.forEach(function (comment) { %>
+    <% let labels = []; try { labels = JSON.parse(comment.ai_labels || '[]'); } catch (e) { labels = []; } %>
+    <div class="queue-item <%= comment.status === 'hidden' ? 'queue-item--flag' : '' %>">
+      <div class="queue-item__head">
+        <% if (comment.status === 'hidden') { %><span class="badge badge--danger">待复核</span><% } %>
+        <% if (comment.status === 'deleted') { %><span class="badge badge--muted">已删除</span><% } %>
+        <span class="badge <%= riskBadge(comment.ai_risk).cls %>">风险 <%= comment.ai_risk %></span>
+        <% labels.forEach(function (label) { %><span class="badge badge--muted"><%= label %></span><% }); %>
+        <span class="text-mute text-xs">
+          <%= comment.nickname %>（<%= comment.real_name %>）
+          · <%= formatTime(comment.created_at) %>
+        </span>
+      </div>
+
+      <p class="text-sm text-mute mb-0">
+        所属帖子：<a href="/posts/<%= comment.post_id %>#comments"><%= comment.post_title %></a>
+      </p>
+
+      <div class="queue-item__content" style="margin-top:8px"><%= comment.content %></div>
+      <% if (comment.ai_summary) { %><p class="text-xs text-mute"><%= comment.ai_summary %></p><% } %>
+
+      <div class="queue-item__foot">
+        <% if (comment.status === 'hidden') { %>
+          <form action="/admin/comments/<%= comment.id %>/approve" method="post">
+            <%- csrfInput %>
+            <button class="btn btn--ok btn--sm" type="submit">放行展示</button>
+          </form>
+        <% } %>
+        <% if (comment.status !== 'deleted') { %>
+          <form action="/admin/comments/<%= comment.id %>/delete" method="post" data-confirm="确定删除这条评论吗？">
+            <%- csrfInput %>
+            <button class="btn btn--danger btn--sm" type="submit">删除评论</button>
+          </form>
+        <% } %>
+        <a class="btn btn--ghost btn--sm" href="/posts/<%= comment.post_id %>#comments">查看上下文</a>
+      </div>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

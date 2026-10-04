@@ -1,0 +1,62 @@
+<%- include('../partials/header', { title: title, activeNav: 'admin' }) %>
+
+<div class="page-head">
+  <div>
+    <h1>改名申请</h1>
+    <p class="page-head__sub">成员改名由管理员审核，管理员改名由超级管理员审核，通过后真实姓名才更新。</p>
+  </div>
+</div>
+
+<%- include('partials/tabs', { tab: 'renames' }) %>
+
+<% if (!renames.length) { %>
+  <div class="card">
+    <div class="empty"><span class="empty__icon"></span>当前没有待处理的改名申请。</div>
+  </div>
+<% } else { %>
+  <% renames.forEach(function (r) { %>
+    <div class="card">
+      <div class="card__head">
+        <h2 class="card__title">
+          <%= r.nickname %>
+          <span class="badge <%= r.user_role === 'admin' ? 'badge--ok' : '' %>"><%= r.user_role === 'admin' ? '管理员' : '同学' %></span>
+        </h2>
+        <span class="card__hint">申请于 <%= formatTime(r.created_at) %>（<%= fromNow(r.created_at) %>）</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data table--compact">
+          <tbody>
+            <tr>
+              <th style="width:110px">用户名</th><td class="mono"><%= r.username %></td>
+              <th style="width:110px">班级</th><td><%= r.class_name %></td>
+            </tr>
+            <tr>
+              <th>原姓名</th><td><%= r.old_name %></td>
+              <th>新姓名</th><td class="text-accent" style="font-weight:700"><%= r.new_name %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (r.user_role === 'admin' && !currentUser.isSuperAdmin) { %>
+        <p class="text-mute text-sm mb-0">该申请由管理员提交，仅超级管理员可审核。</p>
+      <% } else { %>
+        <div class="card__head" style="margin:14px 0 0">
+          <div class="inline-controls">
+            <form action="/admin/renames/<%= r.id %>/approve" method="post" data-confirm="确定把 <%= r.nickname %> 的真实姓名改为「<%= r.new_name %>」吗？">
+              <%- csrfInput %>
+              <button class="btn btn--ok btn--sm" type="submit">通过</button>
+            </form>
+            <form action="/admin/renames/<%= r.id %>/reject" method="post">
+              <%- csrfInput %>
+              <button class="btn btn--ghost btn--sm" type="submit">驳回</button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  <% }); %>
+<% } %>
+
+<%- include('../partials/footer') %>

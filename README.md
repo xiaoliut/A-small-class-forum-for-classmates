@@ -175,6 +175,8 @@ class-forum/
 
 ## 致谢
 
+- [杂鱼科技·杂鱼工作室](https://zayukeji.top)
+- [小高拐拐](https://小高拐拐.top)
 - [Express](https://expressjs.com)
 - [EJS](https://ejs.co)
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)，以及 Node 内置的 `node:sqlite`

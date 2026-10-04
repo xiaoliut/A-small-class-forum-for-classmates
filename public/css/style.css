@@ -621,45 +621,6 @@ textarea.textarea--tall { min-height: 260px; }
 .auth-card--wide { max-width: 620px; }
 .auth-foot { text-align: center; color: var(--text-mute); font-size: .88rem; margin-top: 12px; }
 
-/* #demo-start */
-/* 站长控制台 */
-.master-panel { max-width: 620px; }
-.master-head { margin-bottom: 16px; }
-.master-head h1 { font-size: 1.25rem; margin: 0 0 4px; }
-.master-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.master-meta { margin: 0 0 16px; font-size: .88rem; }
-.master-meta > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 6px 0;
-  border-bottom: 1px dashed var(--line);
-}
-.master-meta dt { color: var(--text-mute); }
-.master-meta dd { margin: 0; }
-.master-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-.master-links { display: flex; gap: 8px; flex-wrap: wrap; }
-.master-foot { text-align: center; margin-top: 14px; font-size: .88rem; }
-.master-hint {
-  background: var(--primary-soft, #eef5f2);
-  border: 1px dashed var(--line);
-  border-radius: var(--radius-sm, 8px);
-  padding: 8px 12px;
-  margin: 0 0 14px;
-  font-size: .88rem;
-}
-/* #demo-end */
 
 .inline-controls {
   display: flex;

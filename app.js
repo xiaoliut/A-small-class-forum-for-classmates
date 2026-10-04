@@ -17,9 +17,6 @@ const settings = require('./src/settings');
 const { attachUser } = require('./src/middleware/auth');
 const { flashMiddleware, csrfMiddleware, csrfToken } = require('./src/middleware/common');
 const viewHelpers = require('./src/utils/view-helpers');
-/* #demo-start */
-const demo = require('./src/demo');
-/* #demo-end */
 
 // ---------------------------------------------------------------------------
 // 1. 数据库准备
@@ -186,9 +183,6 @@ const csrf = (req, res, next) => {
 };
 
 app.use(csrf);
-/* #demo-start */
-app.use(demo.autoLogin); // 演示模式：未登录访客自动以共用超管身份进入
-/* #demo-end */
 app.use(attachUser);
 app.use(viewHelpers.commonLocals);
 
@@ -196,9 +190,6 @@ app.use(viewHelpers.commonLocals);
 // 4. 路由
 // ---------------------------------------------------------------------------
 app.use('/', require('./src/routes/index'));
-/* #demo-start */
-app.use('/', require('./src/routes/master'));
-/* #demo-end */
 app.use('/', require('./src/routes/auth'));
 app.use('/posts', require('./src/routes/posts'));
 app.use('/', require('./src/routes/comments'));
@@ -263,12 +254,6 @@ const server = app.listen(config.port, config.host, () => {
     : (config.ai.enabled && config.ai.apiKey ? `远程模型 ${config.ai.model} + 本地规则` : '本地规则引擎（离线）')
       + (site.features.aiAutoApprove === false ? '，先审后发' : '')));
   console.log('');
-/* #demo-start */
-  if (config.demo.enabled) {
-    console.log('  🎭 演示模式:     已开启（访客自动成为超级管理员，站点设置只读）');
-  }
-  demo.startCleaner();
-/* #demo-end */
 });
 
 // 后台运行时（日志重定向到文件）不必让 stdout 句柄拖住事件循环，

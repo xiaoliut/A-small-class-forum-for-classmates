@@ -155,7 +155,7 @@ async function main() {
   check('GET / 返回 200', home.status === 200, `status=${home.status}`);
   check('首页渲染站点名', has(home.text, '班级论坛'));
   check('首页渲染欢迎语句', has(home.text, '欢迎来到班级论坛'));
-  check('干净状态首页无演示帖子', !has(home.text, '【必读】班级论坛使用规范') && !has(home.text, '闲置教辅资料转让'));
+  check('干净状态首页无示例帖子', !has(home.text, '【必读】班级论坛使用规范') && !has(home.text, '闲置教辅资料转让'));
 
   const sections = await request(null, 'GET', '/sections');
   check('GET /sections 返回 200', sections.status === 200);
@@ -164,7 +164,7 @@ async function main() {
   check('GET /rules 返回 200', rules.status === 200);
 
   const detail = await request(null, 'GET', '/posts/1');
-  check('干净状态下 /posts/1 无演示帖子（404）', detail.status === 404, `status=${detail.status}`);
+  check('干净状态下 /posts/1 无示例帖子（404）', detail.status === 404, `status=${detail.status}`);
 
   const missing = await request(null, 'GET', '/posts/999999');
   check('不存在的帖子返回 404', missing.status === 404, `status=${missing.status}`);
@@ -490,7 +490,7 @@ async function main() {
     console.log('  ℹ️  远程模式：跳过「写回 config 文件」校验（文件在服务器上，本机看不到）');
   }
 
-  // 改配置文件 → 重新加载后生效（本地模式可演示；远程模式仅验证重载接口）
+  // 改配置文件 → 重新加载后生效（本地模式可验证；远程模式仅验证重载接口）
   cleanupSiteSettings();
   if (isLocalTarget) {
     const beforePatch = readConfigFileText();
@@ -627,7 +627,7 @@ function setupAiEnabled() {
   }
 }
 
-/** 清掉本次冒烟测试产生的数据，保持演示库干净 */
+/** 清掉本次冒烟测试产生的数据，保持测试库干净 */
 function cleanup() {
   let db;
   try {

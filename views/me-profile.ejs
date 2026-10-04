@@ -4,11 +4,6 @@
   <h1>修改头像</h1>
   <p class="text-mute text-sm">点击「修改头像」弹出裁剪窗口：选图 → 拖动图片、调整圆圈 → 确定保存。</p>
 
-  <!-- #demo-start -->
-  <% if (masterProfileLocked) { %>
-    <p class="master-hint">演示站点的超级管理员资料已锁定，无法修改。</p>
-  <% } %>
-  <!-- #demo-end -->
 
   <div class="avatar-entry">
     <% if (avatarUrl(currentUser)) { %>

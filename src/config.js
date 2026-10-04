@@ -62,20 +62,6 @@ const config = {
     timeoutMs: num(process.env.AI_TIMEOUT_MS, 8000),
     autoApprove: bool(process.env.AI_AUTO_APPROVE, true)
   }
-/* #demo-start */
-  ,
-  demo: {
-    // 演示模式：访客自动以共用超管身份进入、站点设置只读、定时清理游客数据
-    enabled: bool(process.env.DEMO_MODE, false),
-    cleanIntervalMs: num(process.env.DEMO_CLEAN_INTERVAL, 60 * 60 * 1000),
-    // 站长入口路径：演示模式下这个地址不由自动登录接管，可以正常输账号密码
-    masterPath: (process.env.MASTER_PATH || 'master').replace(/^\/+|\/+$/g, ''),
-    // 进入站长控制台的口令；留空则不校验口令（只靠路径隐蔽）
-    masterKey: process.env.MASTER_KEY || '',
-    // 站长登录框上方显示的账号提示（留空则不显示），例如 "admin / 123456"
-    loginHint: process.env.MASTER_LOGIN_HINT || ''
-  }
-/* #demo-end */
 };
 
 module.exports = config;

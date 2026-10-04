@@ -4,7 +4,7 @@
  * 独立数据库初始化脚本：node init-db.js [--force]
  * （package.json 里的 npm run init-db / reset-db 都指向它）
  *
- * --force 会先删除 data/forum.db 再重建（干净状态，仅建账号，不灌演示帖子）。
+ * --force 会先删除 data/forum.db 再重建（干净状态，仅建账号，不灌示例帖子）。
  */
 
 const db = require('./src/db');

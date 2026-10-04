@@ -1,6 +1,6 @@
 'use strict';
 
-/** 最终验收：检查服务存活与演示数据状态 */
+/** 最终验收：检查服务存活与示例数据状态 */
 const http = require('http');
 
 function get(path) {

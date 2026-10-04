@@ -13,17 +13,6 @@
 
 <%- include('partials/tabs', { tab: 'settings' }) %>
 
-<!-- #demo-start -->
-<% if (demoMode && isMasterUser) { %>
-  <div class="alert alert--success">
-    你是站长身份（已通过站长口令），本站设置<strong>可以修改</strong>。
-  </div>
-<% } else if (demoMode) { %>
-  <div class="alert alert--warn">
-    这是演示网站，站点设置已锁定，<strong>禁止修改</strong>。下面的保存操作都会被拒绝。
-  </div>
-<% } %>
-<!-- #demo-end -->
 
 <div class="layout">
   <div class="layout__main">

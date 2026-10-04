@@ -199,9 +199,7 @@ class-forum/
 
 提交代码前建议先执行 `npm test`，确认未影响既有功能。
 
-杂鱼科技·杂鱼工作室
 
-小高拐拐
 
 ## 许可证
 
@@ -214,3 +212,5 @@ class-forum/
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)，以及 Node 内置的 `node:sqlite`
 - [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
 - [multer](https://github.com/expressjs/multer)
+- [杂鱼科技·杂鱼工作室](https://zayukeji.top)
+- [小高拐拐](https://小高拐拐.top)

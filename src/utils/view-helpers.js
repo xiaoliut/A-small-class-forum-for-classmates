@@ -5,6 +5,9 @@
 const config = require('../config');
 const db = require('../db');
 const settings = require('../settings');
+/* #demo-start */
+const demo = require('../demo');
+/* #demo-end */
 
 /** 当前生效的分区列表（来自 config/sections.jsonc） */
 function getSections() {
@@ -243,6 +246,18 @@ function commonLocals(req, res, next) {
   res.locals.footer = buildFooter(site);
   res.locals.sections = sections;
   res.locals.featureFlags = site.features;
+/* #demo-start */
+  res.locals.demoMode = config.demo.enabled;
+  // 演示模式下：通过站长口令解锁过的会话才算「站长」，可以改站点设置
+  res.locals.isMasterUser = demo.isMaster(req);
+  res.locals.masterBase = '/' + config.demo.masterPath;
+  // 登录页上显示的演示账号提示（留空则不显示）
+  res.locals.loginHint = config.demo.loginHint;
+  // 演示模式下，超管账号的资料/密码是锁定的（访客共用同一个账号）
+  res.locals.masterProfileLocked = Boolean(
+    config.demo.enabled && req.user && req.user.isSuperAdmin
+  );
+/* #demo-end */
   res.locals.userStatusBadge = userStatusBadge;
   res.locals.avatarUrl = avatarUrl;
   res.locals.avatarHtml = avatarHtml;

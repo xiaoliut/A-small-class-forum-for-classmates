@@ -1,0 +1,127 @@
+<%- include('partials/header', { title: title, activeNav: '' }) %>
+
+<div class="card auth-card master-panel">
+  <% if (locked) { %>
+    <div class="master-head">
+      <h1>站长入口</h1>
+      <p class="text-mute text-sm">请输入访问口令。</p>
+    </div>
+
+    <form action="<%= masterBase %>/unlock" method="post" autocomplete="off">
+      <%- csrfInput %>
+      <div class="form-row">
+        <label class="field-label required" for="key">口令</label>
+        <input type="password" id="key" name="key" required autofocus>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">进入</button>
+    </form>
+
+    <p class="master-foot"><a href="/">← 以游客身份返回论坛</a></p>
+  <% } else if (status) { %>
+    <div class="master-head">
+      <h1>站长控制台</h1>
+      <p class="text-mute text-sm">演示站的运行状态和几个快捷操作。</p>
+    </div>
+
+    <div class="master-grid">
+      <div class="stat">
+        <div class="stat__value"><%= status.posts %></div>
+        <div class="stat__label">帖子（保留 <%= status.kept %> 条公告）</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value"><%= status.comments %></div>
+        <div class="stat__label">评论</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value"><%= status.users %></div>
+        <div class="stat__label">账号（游客 <%= status.visitors %> 个）</div>
+      </div>
+    </div>
+
+    <dl class="master-meta">
+      <div>
+        <dt>演示模式</dt>
+        <dd><span class="badge badge--ok">已开启</span>，站点设置只读</dd>
+      </div>
+      <div>
+        <dt>清场间隔</dt>
+        <dd><%= Math.round(status.intervalMs / 60000) %> 分钟</dd>
+      </div>
+      <div>
+        <dt>上次清场</dt>
+        <dd><%= status.lastCleanAt ? formatTime(status.lastCleanAt) : '尚未清场' %></dd>
+      </div>
+      <div>
+        <dt>下次清场</dt>
+        <dd><%= status.nextCleanAt ? formatTime(status.nextCleanAt) : '—' %></dd>
+      </div>
+    </dl>
+
+    <form action="<%= masterBase %>/clean" method="post" class="master-actions">
+      <%- csrfInput %>
+      <button class="btn btn--danger" type="submit">立即清场</button>
+      <span class="text-mute text-sm">删掉所有评论、游客账号和非公告帖子</span>
+    </form>
+
+    <div class="master-links">
+      <a class="btn btn--primary btn--sm" href="/">前台首页</a>
+      <a class="btn btn--ghost btn--sm" href="<%= masterBase %>/admin">管理后台</a>
+      <a class="btn btn--ghost btn--sm" href="<%= masterBase %>/admin/settings">站点设置</a>
+      <a class="btn btn--ghost btn--sm" href="/posts/new">发帖</a>
+      <a class="btn btn--ghost btn--sm" href="/me">个人中心</a>
+    </div>
+
+    <div class="master-actions" style="margin:16px 0 0">
+      <form action="/logout" method="post" class="inline-form">
+        <%- csrfInput %>
+        <button class="btn btn--ghost" type="submit">退出登录</button>
+      </form>
+      <% if (masterKeyConfigured) { %>
+        <form action="<%= masterBase %>/lock" method="post" class="inline-form">
+          <%- csrfInput %>
+          <button class="btn btn--ghost" type="submit">锁定口令</button>
+        </form>
+      <% } %>
+      <span class="text-mute text-sm">退出登录会变回普通访客，并清掉这台设备的口令记录</span>
+    </div>
+
+    <% if (!masterKeyConfigured) { %>
+      <p class="text-mute text-sm" style="margin-top:12px">
+        提示：还没设置访问口令（<code>MASTER_KEY</code>），目前只靠路径隐蔽。
+      </p>
+    <% } %>
+  <% } else { %>
+    <div class="master-head">
+      <h1>站长入口</h1>
+      <p class="text-mute text-sm">演示模式下访客会被自动登录为共用管理员，这里是站长专用登录。</p>
+    </div>
+
+    <% if (loginHint) { %>
+      <p class="master-hint">演示账号：<code><%= loginHint %></code></p>
+    <% } %>
+
+    <form action="/login" method="post" autocomplete="off">
+      <%- csrfInput %>
+      <input type="hidden" name="next" value="<%= masterBase %>">
+      <div class="form-row">
+        <label class="field-label required" for="username">用户名</label>
+        <input type="text" id="username" name="username" required maxlength="20" autofocus>
+      </div>
+      <div class="form-row">
+        <label class="field-label required" for="password">密码</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">登录</button>
+    </form>
+
+    <p class="master-foot">
+      <a href="/">← 以游客身份返回论坛</a>
+      <% if (masterKeyConfigured) { %>
+        · <a href="#" onclick="document.getElementById('lock-form').submit(); return false;">重新锁定</a>
+        <form id="lock-form" action="<%= masterBase %>/lock" method="post" hidden><%- csrfInput %></form>
+      <% } %>
+    </p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

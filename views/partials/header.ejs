@@ -38,15 +38,25 @@
 
       <div class="nav__user">
         <% if (currentUser) { %>
+          <!-- #demo-start -->
+          <% if (demoMode) { %>
+            <span class="badge badge--info" title="演示站点：站点设置已锁定，游客数据每小时清理一次">演示模式</span>
+          <% } %>
+          <!-- #demo-end -->
           <a class="nav__me" href="/me">
             <%- avatarHtml(currentUser) %>
             <span class="nav__me-name"><%= currentUser.nickname %></span>
           </a>
           <form action="/logout" method="post" class="inline-form">
             <%- csrfInput %>
-            <button type="submit" class="btn btn--ghost btn--sm">退出</button>
+            <button type="submit" class="btn btn--ghost btn--sm"><!-- #demo-start --><%= demoMode ? '退出（换普通身份）' : '退出' %><!-- #demo-end -->退出</button>
           </form>
         <% } else { %>
+          <!-- #demo-start -->
+          <% if (demoMode) { %>
+            <a class="btn btn--primary btn--sm" href="/demo/enter">以管理员身份演示</a>
+          <% } %>
+          <!-- #demo-end -->
           <a class="btn btn--ghost btn--sm" href="/login">登录</a>
           <% if (!featureFlags || featureFlags.allowRegister !== false) { %>
             <a class="btn btn--ghost btn--sm" href="/register">申请加入</a>
@@ -57,6 +67,24 @@
   </div>
 </header>
 
+<!-- #demo-start -->
+<% if (demoMode && isMasterUser) { %>
+  <div class="container">
+    <div class="alert alert--info">
+      <strong>演示站点 · 站长模式</strong>：你是站长身份，站点设置可以修改，也可以在
+      <a href="<%= masterBase || '/master' %>">站长控制台</a>里清场。
+    </div>
+  </div>
+<% } else if (demoMode) { %>
+  <div class="container">
+    <div class="alert alert--info">
+      <strong>演示站点</strong>：你正以共用的超级管理员身份浏览，<strong>站点设置已锁定、禁止修改</strong>；
+      想体验普通同学请先「退出」，再走注册申请流程；
+      帖子、评论和游客账号每小时清理一次。
+    </div>
+  </div>
+<% } %>
+<!-- #demo-end -->
 
 <main class="container page">
   <% if (currentUser && currentUser.status !== 'approved' && typeof hidePendingBanner === 'undefined') { %>

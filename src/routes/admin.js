@@ -8,6 +8,9 @@ const ai = require('../ai');
 const settings = require('../settings');
 const accountDeletion = require('../account-deletion');
 const { requireAdmin, requireSuperAdmin, logModeration } = require('../middleware/common');
+/* #demo-start */
+const demo = require('../demo');
+/* #demo-end */
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -786,7 +789,7 @@ router.get('/settings', requireSuperAdmin, (req, res) => {
   });
 });
 
-router.post('/settings', requireSuperAdmin,(req, res) => {
+router.post('/settings', requireSuperAdmin, /* #demo-start */ demo.blockWrite(), /* #demo-end */ (req, res) => {
   const patch = buildSitePatch(req.body);
   const merged = settings.saveSiteToDb(patch);
   const written = settings.saveSiteToFile(merged);
@@ -817,7 +820,7 @@ router.post('/settings', requireSuperAdmin,(req, res) => {
  * 读取 config/site.jsonc 原文（超级管理员专用，纯文本返回）。
  * 供自动化测试在改配置前备份原文，避免测试内容永久留在配置文件里。
  */
-router.get('/settings/raw', requireSuperAdmin,(req, res) => {
+router.get('/settings/raw', requireSuperAdmin, /* #demo-start */ demo.requireMaster('配置文件原文仅站长可读。'), /* #demo-end */ (req, res) => {
   const file = path.join(settings.CONFIG_DIR, 'site.jsonc');
   try {
     res.type('text/plain; charset=utf-8').send(fs.readFileSync(file, 'utf8'));
@@ -830,7 +833,7 @@ router.get('/settings/raw', requireSuperAdmin,(req, res) => {
  * 还原 config/site.jsonc 原文（超级管理员专用）。
  * 供自动化测试与「误改配置」场景使用，避免测试把内容永久写进配置文件。
  */
-router.post('/settings/restore', requireSuperAdmin,(req, res) => {
+router.post('/settings/restore', requireSuperAdmin, /* #demo-start */ demo.blockWrite(), /* #demo-end */ (req, res) => {
   if (req.get('x-requested-with') !== 'config-restore') {
     req.flash('error', '该接口仅供配置还原使用。');
     return res.redirect('/admin/settings');
@@ -852,7 +855,7 @@ router.post('/settings/restore', requireSuperAdmin,(req, res) => {
 });
 
 /** 重新加载 config/*.jsonc（直接改文件后用这个生效，不必重启服务） */
-router.post('/settings/reload', requireSuperAdmin,(req, res) => {
+router.post('/settings/reload', requireSuperAdmin, /* #demo-start */ demo.blockWrite(), /* #demo-end */ (req, res) => {
   const site = settings.getSite();
   const sections = settings.getSections();
   const rules = settings.getModerationRules();
@@ -863,7 +866,7 @@ router.post('/settings/reload', requireSuperAdmin,(req, res) => {
 });
 
 /** 恢复默认：清空数据库里的覆盖值，回到 config/site.jsonc + 内置默认 */
-router.post('/settings/reset', requireSuperAdmin,(req, res) => {
+router.post('/settings/reset', requireSuperAdmin, /* #demo-start */ demo.blockWrite(), /* #demo-end */ (req, res) => {
   db.run("DELETE FROM settings WHERE key = 'site'");
   logModeration(req.user, 'reset_settings', 'settings', null, '恢复站点设置为配置文件默认值');
   req.flash('success', '已恢复为 config/site.jsonc 中的设置。');

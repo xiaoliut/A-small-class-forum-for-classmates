@@ -4,6 +4,11 @@
   <h1>登录班级论坛</h1>
   <p class="text-mute text-sm">使用你的论坛账号登录。如果你还没有账号，请先提交入班申请。</p>
 
+  <!-- #demo-start -->
+  <% if (loginHint) { %>
+    <p class="master-hint">演示账号：<code><%= loginHint %></code></p>
+  <% } %>
+  <!-- #demo-end -->
 
   <form action="/login" method="post" autocomplete="off">
     <%- csrfInput %>

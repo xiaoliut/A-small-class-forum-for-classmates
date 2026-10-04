@@ -55,8 +55,8 @@
 要求 Node.js 18 及以上，推荐 22 或更高版本。Node 22.5 起内置 SQLite 驱动，无需编译原生模块；低版本会自动回退到 better-sqlite3，需要机器预先安装编译工具链。
 
 ```bash
-git clone https://github.com/xiaoliut/---A-small-class-forum-for-classmates.git
-cd ---A-small-class-forum-for-classmates
+git clone https://github.com/xiaoliut/A-small-class-forum-for-classmates.git
+cd A-small-class-forum-for-classmates
 npm install --omit=dev
 node init-db.js
 npm start
@@ -107,6 +107,36 @@ systemctl enable --now class-forum
 
 随后用 Nginx 将 80 端口反向代理到 3000。完整步骤（含 HTTPS 与宝塔面板注意事项）见 [DEPLOY.md](DEPLOY.md)。
 
+<!-- #demo-start -->
+### 演示模式
+
+对外提供演示时，可在 `.env` 中设置 `DEMO_MODE=1`：
+
+- 访客访问时自动以共用的超级管理员身份登录，无需输入密码
+- 站点设置对访客只读，保存会被拒绝并提示「演示网站禁止修改」；站长解锁后可正常修改
+- 如需测试普通同学视角，点击导航栏「退出（换普通身份）」后走正常注册流程；点击「以管理员身份演示」可切回
+- 每隔一小时执行一次清理：评论、除超管外的所有账号，以及非公告类的帖子
+- 站长发布的置顶帖与公告帖会保留，站点不会被清空
+
+相关配置：
+
+| 变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `DEMO_MODE` | `0` | 设为 `1` 开启演示模式 |
+| `DEMO_CLEAN_INTERVAL` | `3600000` | 清理间隔（毫秒） |
+| `MASTER_PATH` | `master` | 站长入口路径 |
+| `MASTER_KEY` | 空 | 进入站长控制台的口令，留空则仅依赖路径隐蔽 |
+| `MASTER_LOGIN_HINT` | 空 | 登录页显示的账号提示，留空则不显示 |
+
+**站长控制台**：演示模式下访客请求会被自动登录接管，因此保留了一个不受接管的入口（默认 `/master`），进入需先通过口令。
+
+- 第一步：输入 `MASTER_KEY` 口令（未配置则跳过）
+- 第二步：使用超管账号密码登录（不会被自动登录覆盖）
+- 登录后展示：演示站状态（帖子 / 评论 / 账号数）、上次与下次清理时间、「立即清理」按钮，以及前台 / 后台 / 发帖 / 个人中心的快捷入口
+- 登录后可正常发帖评论，身份仍显示为超管
+
+站长发布的置顶帖与公告帖不会被清理，可用于撰写演示规则说明。
+<!-- #demo-end -->
 
 ## 使用
 
@@ -165,7 +195,7 @@ class-forum/
 
 ## 贡献
 
-发现问题或有功能建议，可提交 [Issue](https://github.com/xiaoliut/---A-small-class-forum-for-classmates/issues) 或 [Pull Request](https://github.com/xiaoliut/---A-small-class-forum-for-classmates/pulls)。
+发现问题或有功能建议，可提交 [Issue](https://github.com/xiaoliut/A-small-class-forum-for-classmates/issues) 或 [Pull Request](https://github.com/xiaoliut/A-small-class-forum-for-classmates/pulls)。
 
 提交代码前建议先执行 `npm test`，确认未影响既有功能。
 

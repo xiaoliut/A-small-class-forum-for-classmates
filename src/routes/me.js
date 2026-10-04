@@ -9,6 +9,9 @@ const db = require('../db');
 const config = require('../config');
 const accountDeletion = require('../account-deletion');
 const { requireApproved, verifyCsrf } = require('../middleware/common');
+/* #demo-start */
+const demo = require('../demo');
+/* #demo-end */
 
 const router = express.Router();
 
@@ -74,7 +77,7 @@ router.get('/delete-account', requireApproved, (req, res) => {
   res.render('me-delete', { title: '注销账号', deletion: pending || null });
 });
 
-router.post('/delete-account', requireApproved,(req, res) => {
+router.post('/delete-account', requireApproved, /* #demo-start */ demo.blockMasterProfile(), /* #demo-end */ (req, res) => {
   const reason = String(req.body.reason || '').trim();
   if (!reason) {
     req.flash('error', '请填写注销理由。');
@@ -111,7 +114,7 @@ router.get('/password', requireApproved, (req, res) => {
   res.render('me-password', { title: '修改密码' });
 });
 
-router.post('/password', requireApproved,(req, res) => {
+router.post('/password', requireApproved, /* #demo-start */ demo.blockMasterProfile(), /* #demo-end */ (req, res) => {
   const current = String(req.body.current || '');
   const next = String(req.body.next || '');
   const confirm = String(req.body.confirm || '');
@@ -138,7 +141,7 @@ router.get('/profile', requireApproved, (req, res) => {
   res.render('me-profile', { title: '修改资料', contact: user || {}, pendingRename });
 });
 
-router.post('/profile', requireApproved,(req, res, next) => {
+router.post('/profile', requireApproved, /* #demo-start */ demo.blockMasterProfile(), /* #demo-end */ (req, res, next) => {
   avatarUpload.single('avatar')(req, res, (err) => {
     if (err) {
       req.flash('error', err.message || '头像上传失败，请检查文件大小或格式。');
@@ -215,7 +218,7 @@ router.post('/profile', requireApproved,(req, res, next) => {
  * 上传裁剪后的头像（base64，JSON body）。
  * 前端裁剪器把圆形头像裁成 PNG 后 POST 到这里，返回 JSON。
  */
-router.post('/avatar', requireApproved,(req, res) => {
+router.post('/avatar', requireApproved, /* #demo-start */ demo.blockMasterProfile(), /* #demo-end */ (req, res) => {
   const dataUrl = String(req.body.avatar || '').trim();
   const match = dataUrl.match(/^data:image\/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=\s]+)$/);
   if (!match) {

@@ -15,7 +15,10 @@
     "stop": "node stop.js",
     "init-db": "node init-db.js",
     "reset-db": "node init-db.js --force",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js",
+    "remote-info": "node tools/remote-info.mjs",
+    "deploy": "node tools/deploy.mjs",
+    "deploy:app": "node tools/deploy.mjs --app-only"
   },
   "keywords": [
     "forum",
@@ -32,5 +35,8 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "ssh2": "^1.17.0"
   }
 }

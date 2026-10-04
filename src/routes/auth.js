@@ -5,6 +5,10 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 const settings = require('../settings');
 const { csrfToken, logModeration } = require('../middleware/common');
+/* #demo-start */
+const config = require('../config');
+const demo = require('../demo');
+/* #demo-end */
 
 const router = express.Router();
 
@@ -50,10 +54,17 @@ router.post('/login', (req, res) => {
   }
 
   const token = csrfToken(req);
+/* #demo-start */
+  const wasMasterUnlocked = Boolean(req.session && req.session.masterUnlocked);
+/* #demo-end */
   req.session.regenerate((err) => {
     if (err) return fail('登录失败，请重试。');
     req.session.userId = user.id;
     req.session.csrfToken = token; // 会话 ID 变化后保留 CSRF token，避免正在提交的表单失效
+/* #demo-start */
+    // 登录会重建会话，这里把站长控制台的解锁状态带过去
+    if (wasMasterUnlocked) req.session.masterUnlocked = true;
+/* #demo-end */
     db.run('UPDATE users SET last_login_at = ? WHERE id = ?', new Date().toISOString(), user.id);
     req.flash('success', `欢迎回来，${user.nickname}！`);
     if (user.role === 'admin' || user.role === 'superadmin') return res.redirect(next || '/admin');
@@ -152,9 +163,29 @@ router.get('/register/done', (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.clearCookie('forum.sid');
+/* #demo-start */
+    // 演示模式：记一个标记，之后不再自动登录，方便访客切普通身份
+    // 同时撤掉站长身份（不然退出登录后站长 Cookie 还留着）
+    demo.revokeMaster(null, res);
+    if (config.demo.enabled) {
+      res.cookie(demo.EXIT_COOKIE, '1', {
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 12 * 60 * 60 * 1000
+      });
+    }
+/* #demo-end */
     res.redirect('/');
   });
 });
 
+/* #demo-start */
+/** 演示模式：清除退出标记，重新以共用超级管理员身份进入 */
+router.get('/demo/enter', (req, res) => {
+  res.clearCookie(demo.EXIT_COOKIE);
+  req.flash('success', '已切回超级管理员演示身份。');
+  res.redirect('/');
+});
+/* #demo-end */
 
 module.exports = router;
